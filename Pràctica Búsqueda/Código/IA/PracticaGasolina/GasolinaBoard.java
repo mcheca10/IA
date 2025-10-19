@@ -53,7 +53,10 @@ public class GasolinaBoard {
     // -------------------- CONSTRUCTOR DE COPIA --------------------
 
     public GasolinaBoard(GasolinaBoard other) {
-        this.peticiones = other.peticiones; // Peticiones se comparten (si son inmutables)
+        this.peticiones = new ArrayList<>(other.peticiones.size());
+        for (Peticion p : other.peticiones) {
+            this.peticiones.add(new Peticion(p.idGasolinera, p.idCamion, p.dias));
+        }
         this.camiones = new ArrayList<>();
         for (Camion c : other.camiones) {
             Camion copiaC = new Camion(c.ID);
@@ -373,13 +376,13 @@ private void asignaPeticionesMinimaDistancia() {
 
                 if (viaje.first != -1) {
                     Peticion p1 = peticiones.get(viaje.first);
-                    double valor1 = VALOR_DEPOSITO * (1.02 - 0.02 * p1.dias);
+                    double valor1 = VALOR_DEPOSITO * valordep(p1.dias);
                     beneficioViaje += valor1;
                 }
 
                 if (viaje.second != -1) {
                     Peticion p2 = peticiones.get(viaje.second);
-                    double valor2 = VALOR_DEPOSITO * (1.02 - 0.02 * p2.dias);
+                    double valor2 = VALOR_DEPOSITO * valordep(p2.dias);
                     beneficioViaje += valor2;
                 }
                 beneficioViaje -= COSTE_KM * dist;
@@ -395,7 +398,7 @@ private void asignaPeticionesMinimaDistancia() {
 
         for (Peticion p : peticiones) {
             if (p.idCamion == -1) {
-                double valor = VALOR_DEPOSITO * (1.02 - 0.02 * p.dias);
+                double valor = VALOR_DEPOSITO - VALOR_DEPOSITO * valordep(p.dias);
                 totalPerdido += valor;
             }
         }
@@ -439,18 +442,26 @@ private void asignaPeticionesMinimaDistancia() {
         double cy = centro.getCoordY();
 
         PairInt v = camiones.get(idCamion).trips.get(idViaje);
-        double dist = 0.0;
 
-        if (v.first != -1) {
+        if (v.first == -1 && v.second == -1) return 0.0;
+        if (v.second == -1) {
             Gasolinera g = gasolineras.get(peticiones.get(v.first).idGasolinera);
-            dist += distancia(cx, cy, g.getCoordX(), g.getCoordY()) * 2;
+            return distancia(cx, cy, g.getCoordX(), g.getCoordY()) * 2;
         }
-        if (v.second != -1) {
+        if (v.first == -1) {
             Gasolinera g = gasolineras.get(peticiones.get(v.second).idGasolinera);
-            dist += distancia(cx, cy, g.getCoordX(), g.getCoordY()) * 2;
+            return distancia(cx, cy, g.getCoordX(), g.getCoordY()) * 2;
         }
+        Gasolinera a = gasolineras.get(peticiones.get(v.first).idGasolinera);
+        Gasolinera b = gasolineras.get(peticiones.get(v.second).idGasolinera);
 
-        return dist;
+        double c_a_b_c = distancia(cx,cy,a.getCoordX(),a.getCoordY())
+                    + distancia(a.getCoordX(),a.getCoordY(), b.getCoordX(),b.getCoordY())
+                    + distancia(b.getCoordX(),b.getCoordY(), cx,cy);
+        double c_b_a_c = distancia(cx,cy,b.getCoordX(),b.getCoordY())
+                    + distancia(b.getCoordX(),b.getCoordY(), a.getCoordX(),a.getCoordY())
+                    + distancia(a.getCoordX(),a.getCoordY(), cx,cy);
+        return Math.min(c_a_b_c, c_b_a_c);
     }
 
     // Calcula para idCamion cual es la distancia total que  recorre
@@ -465,9 +476,12 @@ private void asignaPeticionesMinimaDistancia() {
     }
 
     private double distancia(double x1, double y1, double x2, double y2) {
-        double dx = x1 - x2;
-        double dy = y1 - y2;
-        return Math.sqrt(dx * dx + dy * dy);
+        return Math.abs(x1-x2)+Math.abs(y1-y2);
+    }
+
+    private double valordep(int dias) {
+        if (dias == 0) return 1.02;
+        return 1 - Math.pow(2, dias)/100;
     }
 
     // -------------------- EXTRA --------------------

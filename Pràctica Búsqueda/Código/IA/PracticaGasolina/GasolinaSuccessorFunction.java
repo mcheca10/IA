@@ -18,6 +18,7 @@ public class GasolinaSuccessorFunction implements SuccessorFunction {
         int nCamiones = board.getViajes().size();
         Random rnd = new Random();
 
+        
         // --- 1o Intercambiar dos peticiones ---
         for (int i = 0; i < nPeticiones; i++) {
             Peticion p1 = board.getPeticiones().get(i);
@@ -35,7 +36,7 @@ public class GasolinaSuccessorFunction implements SuccessorFunction {
                 }
             }
         }
-
+        
         // --- 2o Añadir una petición no asignada ---
         for (int idNoAsig = 0; idNoAsig < nPeticiones; idNoAsig++) {
             Peticion pNo = board.getPeticiones().get(idNoAsig);
@@ -53,6 +54,7 @@ public class GasolinaSuccessorFunction implements SuccessorFunction {
                 }
             }
         }
+            
         return successors;
     }
 }

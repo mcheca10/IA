@@ -92,19 +92,3 @@ public class GasolinaDemo {
         System.out.println();
     }
 }
-
-private void setInstrumentation(Properties properties) 
-	{
-            propietats = new String();
-            propietats += "Temps de cerca: "+temps+" ms\n";
-            Iterator keys = properties.keySet().iterator();
-            if (keys.hasNext()) {
-                String key = (String) keys.next();
-                String property = properties.getProperty(key);
-                propietats += "Nodes expandits: "+property+"\n";
-                nodesexp=property;
-            }
-	}
-        public String getPropietats(){
-            return propietats;
-        }
