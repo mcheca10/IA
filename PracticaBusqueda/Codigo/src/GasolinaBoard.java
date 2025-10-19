@@ -271,7 +271,6 @@ private void asignaPeticionesMinimaDistancia() {
     // intercambiar de camion (de c1 a c2)
     
     public boolean intercambiarPeticion(int idPet1, int idPet2, int C1, int C2) {
-        if (C1 == C2) return false;
         if (C1 < 0 || C2 < 0 || C1 >= camiones.size() || C2 >= camiones.size()) return false;
 
         Peticion p1 = peticiones.get(idPet1);
@@ -357,6 +356,55 @@ private void asignaPeticionesMinimaDistancia() {
         return true;
     }
 
+
+    // Intercambia viajes completos entre camiones ca y cb, posiciones ta y tb.
+    // Actualiza idCamion de las peticiones movidas y valida km ≤ 640 para ambos.
+    // Devuelve true si el cambio es válido; en caso contrario hace rollback y devuelve false.
+    public boolean swapTrips(int ca, int ta, int cb, int tb) {
+        if (ca == cb && ta == tb) return false; // no-op
+
+        // 1) Validación de índices
+        if (ca < 0 || ca >= camiones.size()) return false;
+        if (cb < 0 || cb >= camiones.size()) return false;
+        Camion A = camiones.get(ca);
+        Camion B = camiones.get(cb);
+        if (ta < 0 || ta >= A.trips.size()) return false;
+        if (tb < 0 || tb >= B.trips.size()) return false;
+
+        // 2) Copias para rollback
+        PairInt tripA = A.trips.get(ta);
+        PairInt tripB = B.trips.get(tb);
+        PairInt oldA = new PairInt(tripA.first, tripA.second);
+        PairInt oldB = new PairInt(tripB.first, tripB.second);
+
+        // 3) Aplicar swap en listas de viajes
+        A.trips.set(ta, oldB);
+        B.trips.set(tb, oldA);
+
+        // 4) Actualizar idCamion de las peticiones afectadas
+        //    Guardamos para posible rollback
+        ArrayList<Integer> changed = new ArrayList<>(4);
+        if (oldA.first  != -1) { peticiones.get(oldA.first ).idCamion = cb; changed.add(oldA.first ); }
+        if (oldA.second != -1) { peticiones.get(oldA.second).idCamion = cb; changed.add(oldA.second); }
+        if (oldB.first  != -1) { peticiones.get(oldB.first ).idCamion = ca; changed.add(oldB.first ); }
+        if (oldB.second != -1) { peticiones.get(oldB.second).idCamion = ca; changed.add(oldB.second); }
+
+        // 5) Verificar restricción de kilómetros (≤ 640) en ambos camiones
+        double kmA = getDistanciaPorCamion(ca);
+        double kmB = getDistanciaPorCamion(cb);
+        if (kmA > 640.0 || kmB > 640.0) {
+            // --- ROLLBACK ---
+            A.trips.set(ta, oldA);
+            B.trips.set(tb, oldB);
+            for (int pid : changed) {
+                boolean estabaEnA = (oldA.first == pid || oldA.second == pid);
+                peticiones.get(pid).idCamion = estabaEnA ? ca : cb;
+            }
+            return false;
+        }
+
+        return true;
+    }
 
 // -------------------- FUNCIONES AUXILIARES --------------------
 
