@@ -1,4 +1,4 @@
-package IA.PracticaGasolina;
+package PracticaBusqueda.Codigo.src;
 
 import aima.search.framework.*;
 import java.util.*;

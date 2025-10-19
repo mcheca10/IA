@@ -1,4 +1,5 @@
-package IA.PracticaGasolina;
+package PracticaBusqueda.Codigo.src;
+
 
 public class PairInt {
     public int first;

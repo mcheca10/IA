@@ -1,4 +1,4 @@
-package IA.PracticaGasolina;
+package PracticaBusqueda.Codigo.src;
 
 public class Peticion {
     public int idGasolinera;
