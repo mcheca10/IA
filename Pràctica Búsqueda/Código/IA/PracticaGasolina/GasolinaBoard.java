@@ -489,5 +489,31 @@ private void asignaPeticionesMinimaDistancia() {
     public static Gasolineras getGasolineras() { return gasolineras; }
     public ArrayList<Peticion> getPeticiones() { return peticiones; }
     public ArrayList<Camion> getViajes() { return camiones; }
+    public void debugAll() {
+        for (Camion c : camiones){
+            System.out.printf("El camión %d tiene los siguientes viajes:\n", c.ID);
+            for (int i = 0; i < c.trips.size(); i++){
+                System.out.printf("- Viaje número %d:\n", i);
+                int x1 = c.trips.get(i).first;
+                int x2 = c.trips.get(i).second;
+                if(x1 != -1){
+                    Peticion P1 = peticiones.get(x1);
+                    Gasolinera g1 = gasolineras.get(P1.idGasolinera);
+                    System.out.printf("  - Atiende primero la petición %d, situada en x=%d, y=%d\n",x1, g1.getCoordX(), g1.getCoordY());
+                }
+                else{
+                    System.out.println("  - La primera petición de este viaje está vacía");
+                }
+                if (x2 != -1){
+                    Peticion P2 = peticiones.get(c.trips.get(i).second);
+                    Gasolinera g2 = gasolineras.get(P2.idGasolinera);
+                    System.out.printf("  - Atiende después la petición %d, situada en x=%d, y=%d\n",x2, g2.getCoordX(), g2.getCoordY());
+                }
+                else{
+                    System.out.println("  - La segunda petición de este viaje está vacía");
+                }
 
+            }
+        }
+    }
 }
