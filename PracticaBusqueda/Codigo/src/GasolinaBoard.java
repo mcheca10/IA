@@ -398,7 +398,7 @@ private void asignaPeticionesMinimaDistancia() {
 
         for (Peticion p : peticiones) {
             if (p.idCamion == -1) {
-                double valor = VALOR_DEPOSITO - VALOR_DEPOSITO * valordep(p.dias);
+                double valor = (VALOR_DEPOSITO * valordep(p.dias)) - (VALOR_DEPOSITO * valordep(p.dias+1));
                 totalPerdido += valor;
             }
         }
