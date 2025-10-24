@@ -7,7 +7,7 @@ import java.util.*;
 public class GasolinaDemo {
 
     public static void main(String[] args) throws Exception {
-        // ----------- LECTURA DE PARÁMETROS -----------
+        // ========== LECTURA DE PARÁMETROS ==========
         Scanner sc = new Scanner(System.in);
         System.out.print("Número de gasolineras: ");
         int nGas = sc.nextInt();
@@ -22,12 +22,22 @@ public class GasolinaDemo {
         System.out.println("2: Asigna las peticiones más cercanas al camión, minimizando las distancias a recorrer.");
         System.out.println("3: Greedy, se utiliza un algoritmo que prioriza aquellas peticiones con mínimo coste general.");
         int method = sc.nextInt();
+        System.out.println("Introduce que heurística quieres utilizar para llegar a la solución óptima:");
+        System.out.println("1: Maximiza beneficios y disminuye todos los costes.");
+        System.out.println("2: Maximiza el beneficio por kilómetro.");
+        int heuristic = sc.nextInt();
         sc.close();
 
         GasolinaBoard initial = new GasolinaBoard(nGas, nCent, mult, seed, method);
-        HeuristicFunction hf = new GasolinaHeuristicFunction();
+        HeuristicFunction hf;
+        if (heuristic == 1){
+            hf = new GasolinaHeuristicFunction();
+        }
+        else{
+            hf = new GasolinaHeuristicFunction2();
+        }
 
-        // ----------- HILL CLIMBING -----------
+        // ========== HILL CLIMBING ==========
         System.out.println("\n=== HILL CLIMBING ===");
         Problem p1 = new Problem(initial, new GasolinaSuccessorFunction(), new GasolinaGoalTest(), hf);
 
@@ -46,7 +56,7 @@ public class GasolinaDemo {
         System.out.println("Tiempo total: " + (t2 - t1) + " ms");
 
 
-        // ----------- SIMULATED ANNEALING -----------
+        // ========== SIMULATED ANNEALING ==========
         System.out.println();
         System.out.println("=== SIMULATED ANNEALING ===");
         Problem p2 = new Problem(initial, new GasolinaSuccessorFunctionSA(), new GasolinaGoalTest(), hf);
@@ -69,7 +79,7 @@ public class GasolinaDemo {
         System.out.println("Tiempo total: " + (t2 - t1) + " ms");
     }
 
-    // -------------------- MÉTODOS AUXILIARES --------------------
+    // ==========--------- MÉTODOS AUXILIARES ==========---------
 
     private static void printActions(List actions) {
         System.out.println("\n--- Acciones realizadas ---");

@@ -15,7 +15,8 @@ public class GasolinaHeuristicFunction implements HeuristicFunction {
         GasolinaBoard board = (GasolinaBoard) state;
 
         double beneficio = board.getBeneficioTotal();
+        double dist = board.getDistTotal();
         double valorNoAtendidas = board.getValorPeticionesNoAsignadas();
-        return -beneficio + valorNoAtendidas;
+        return -beneficio + valorNoAtendidas + (dist*2.0);
     }
 }

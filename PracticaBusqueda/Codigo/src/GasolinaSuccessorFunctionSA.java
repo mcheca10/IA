@@ -18,8 +18,8 @@ public class GasolinaSuccessorFunctionSA implements SuccessorFunction {
         int nCamiones = board.getViajes().size();
         Random rnd = new Random();
 
-        for (int intentos = 0; intentos < 50; intentos++) {
-            int tipo = rnd.nextInt(2); // 0: intercambiar, 1: añadir
+        for (int intentos = 0; intentos < 100; intentos++) {
+            int tipo = rnd.nextInt(3); // 0: intercambiar, 1: añadir, 2: intercambio viajes
 
             GasolinaBoard nuevo = new GasolinaBoard(board);
             boolean ok = false;
@@ -37,7 +37,7 @@ public class GasolinaSuccessorFunctionSA implements SuccessorFunction {
                     }
                 }
             }
-            else {
+            else if (tipo == 1){
                 int pNo = rnd.nextInt(nPeticiones);
                 int pAsig = rnd.nextInt(nPeticiones);
                 if (pNo != pAsig) {
@@ -47,6 +47,17 @@ public class GasolinaSuccessorFunctionSA implements SuccessorFunction {
                         ok = nuevo.añadirPeticion(pNo, pAsig, pa.idCamion);
                         accion = "Añadir aleatorio";
                     }
+                }
+            }
+            else{
+                int c1 = rnd.nextInt(nCamiones);
+                int c2 = rnd.nextInt(nCamiones);
+                int v1 = rnd.nextInt(GasolinaBoard.MAX_VIAJES);
+                int v2 = rnd.nextInt(GasolinaBoard.MAX_VIAJES);
+                if (!(c1 == c2 && v1 == v2)) {
+                    ok = nuevo.swapTrips(c1, v1, c2, v2);
+                    accion = "Intercambiar viajes: camión " + c1 + " viaje " + v1 +
+                             " ↔ camión " + c2 + " viaje " + v2;
                 }
             }
 

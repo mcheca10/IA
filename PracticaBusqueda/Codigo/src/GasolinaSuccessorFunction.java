@@ -18,8 +18,7 @@ public class GasolinaSuccessorFunction implements SuccessorFunction {
         int nCamiones = board.getViajes().size();
         Random rnd = new Random();
 
-        /* 
-        // --- 1o Intercambiar dos peticiones ---
+        // === 1o Intercambiar dos peticiones ===
         for (int i = 0; i < nPeticiones; i++) {
             Peticion p1 = board.getPeticiones().get(i);
             if (p1.idCamion == -1) continue;
@@ -31,13 +30,12 @@ public class GasolinaSuccessorFunction implements SuccessorFunction {
                 GasolinaBoard nuevo = new GasolinaBoard(board);
                 boolean ok = nuevo.intercambiarPeticion(i, j, p1.idCamion, p2.idCamion);
                 if (ok) {
-                    String accion = String.format("Intercambiar petición %d ↔ %d", i, j);
+                    String accion = String.format("Intercambiar petición %d por %d", i, j);
                     successors.add(new Successor(accion, nuevo));
                 }
             }
         }
-        */
-        // --- 2o Añadir una petición no asignada ---
+        // === 2o Añadir una petición no asignada ===
         for (int idNoAsig = 0; idNoAsig < nPeticiones; idNoAsig++) {
             Peticion pNo = board.getPeticiones().get(idNoAsig);
             if (pNo.idCamion != -1) continue;
@@ -55,17 +53,17 @@ public class GasolinaSuccessorFunction implements SuccessorFunction {
             }
         }
 
-        // --- 3o Intercambiar viajes completos entre camiones (SwapTrip) ---
+        // === 3o Intercambiar viajes completos entre camiones (SwapTrip) ===
         for (int ca = 0; ca < nCamiones; ca++) {
             ArrayList<Camion> cams = board.getViajes();
-            int tripsA = cams.get(ca).trips.size(); // = 5 en tu modelo
+            int tripsA = cams.get(ca).trips.size();
             for (int ta = 0; ta < tripsA; ta++) {
                 PairInt va = cams.get(ca).trips.get(ta);
                 // si el viaje A está vacío, no aporta nada
                 if (va.first == -1 && va.second == -1) continue;
 
-                for (int cb = ca + 1; cb < nCamiones; cb++) { // evita duplicados simétricos
-                    int tripsB = cams.get(cb).trips.size();  // = 5
+                for (int cb = ca + 1; cb < nCamiones; cb++) {
+                    int tripsB = cams.get(cb).trips.size();
                     for (int tb = 0; tb < tripsB; tb++) {
                         PairInt vb = cams.get(cb).trips.get(tb);
                         if (vb.first == -1 && vb.second == -1) continue;

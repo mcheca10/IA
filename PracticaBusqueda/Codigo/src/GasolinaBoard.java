@@ -19,7 +19,7 @@ public class GasolinaBoard {
     private static Gasolineras gasolineras;
     private static CentrosDistribucion centros;
 
-    private ArrayList<Peticion> peticiones;                     // Todas las peticiones
+    private ArrayList<Peticion> peticiones;    // Todas las peticiones
     private ArrayList<Camion> camiones;    // camiones[camion][viaje] = lista de idPeticiones
 
     // -------------------- CONSTRUCTOR PRINCIPAL --------------------
@@ -418,7 +418,6 @@ private void asignaPeticionesMinimaDistancia() {
         for (Camion c : camiones) {
             for (int i = 0; i < c.trips.size(); i++) {
                 PairInt viaje = c.trips.get(i);
-                double dist = calcularDistanciaViaje(c.ID, i);
 
                 double beneficioViaje = 0.0;
 
@@ -433,7 +432,6 @@ private void asignaPeticionesMinimaDistancia() {
                     double valor2 = VALOR_DEPOSITO * valordep(p2.dias);
                     beneficioViaje += valor2;
                 }
-                beneficioViaje -= COSTE_KM * dist;
                 total += beneficioViaje;
             }
         }
@@ -483,6 +481,13 @@ private void asignaPeticionesMinimaDistancia() {
 
     // -------------------- CÁLCULO DE DISTANCIAS --------------------
 
+    public double getDistTotal(){
+        double dist = 0.0;
+        for (Camion c : camiones){
+            dist += getDistanciaPorCamion(c.ID);
+        }
+        return dist;
+    }
 
     private double calcularDistanciaViaje(int idCamion, int idViaje) {
         Distribucion centro = centros.get(idCamion);
