@@ -7,26 +7,33 @@ import java.util.*;
 public class GasolinaDemo {
 
     public static void main(String[] args) throws Exception {
-        // ========== LECTURA DE PARÁMETROS ==========
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Número de gasolineras: ");
-        int nGas = sc.nextInt();
-        System.out.print("Número de centros: ");
-        int nCent = sc.nextInt();
-        System.out.print("Multiplicador: ");
-        int mult = sc.nextInt();
-        System.out.print("Seed: ");
-        int seed = sc.nextInt();
-        System.out.println("Introduce que método quieres utilizar para generar el estado inicial:");
-        System.out.println("1: Aleatorio, se asigna cualquier peticion a cualquier camión.");
-        System.out.println("2: Asigna las peticiones más cercanas al camión, minimizando las distancias a recorrer.");
-        System.out.println("3: Greedy, se utiliza un algoritmo que prioriza aquellas peticiones con mínimo coste general.");
-        int method = sc.nextInt();
-        System.out.println("Introduce que heurística quieres utilizar para llegar a la solución óptima:");
-        System.out.println("1: Maximiza beneficios y disminuye todos los costes.");
-        System.out.println("2: Maximiza el beneficio por kilómetro.");
-        int heuristic = sc.nextInt();
-        sc.close();
+        for (int i = 1; i < 11; ++i){
+        // ----------- LECTURA DE PARÁMETROS -----------
+        //Scanner sc = new Scanner(System.in);
+        //System.out.print("Número de gasolineras: ");
+        //int nGas = sc.nextInt();
+        int nGas = 100;
+        //System.out.print("Número de centros: ");
+        //int nCent = sc.nextInt();
+        int nCent = 10;
+        //System.out.print("Multiplicador: ");
+        //int mult = sc.nextInt();
+        int mult= 1;
+        //System.out.print("Seed: ");
+        //int seed = sc.nextInt();
+        int seed = i;
+        //System.out.println("Introduce que método quieres utilizar para generar el estado inicial:");
+        //System.out.println("1: Aleatorio, se asigna cualquier peticion a cualquier camión.");
+        //System.out.println("2: Asigna las peticiones más cercanas al camión, minimizando las distancias a recorrer.");
+        //System.out.println("3: Greedy, se utiliza un algoritmo que prioriza aquellas peticiones con mínimo coste general.");
+        //int method = sc.nextInt();
+        int method = 3;
+        //System.out.println("Introduce que heurística quieres utilizar para llegar a la solución óptima:");
+        //System.out.println("1: Maximiza beneficios y disminuye todos los costes.");
+        //System.out.println("2: Maximiza el beneficio por kilómetro.");
+        //int heuristic = sc.nextInt();
+        int heuristic = 1;
+        //sc.close();
 
         GasolinaBoard initial = new GasolinaBoard(nGas, nCent, mult, seed, method);
         HeuristicFunction hf;
@@ -38,7 +45,7 @@ public class GasolinaDemo {
         }
 
         // ========== HILL CLIMBING ==========
-        System.out.println("\n=== HILL CLIMBING ===");
+        //System.out.println("\n=== HILL CLIMBING ===");
         Problem p1 = new Problem(initial, new GasolinaSuccessorFunction(), new GasolinaGoalTest(), hf);
 
         long t1 = System.currentTimeMillis();
@@ -48,14 +55,14 @@ public class GasolinaDemo {
 
         GasolinaBoard result1 = (GasolinaBoard) search1.getGoalState();
 
-        printActions(agent1.getActions());
+        //printActions(agent1.getActions());
         printInstrumentation(agent1.getInstrumentation());
 
-        System.out.printf("Beneficio total: %.2f\n", result1.getBeneficioTotal());
-        System.out.printf("Valor peticiones no asignadas: %.2f\n", result1.getValorPeticionesNoAsignadas());
+        System.out.printf("Beneficio total: %.2f\n", result1.getBeneficioTotal() - result1.getDistTotal()*2.0);
+        //System.out.printf("Valor peticiones no asignadas: %.2f\n", result1.getValorPeticionesNoAsignadas());
         System.out.println("Tiempo total: " + (t2 - t1) + " ms");
 
-
+        /*
         // ========== SIMULATED ANNEALING ==========
         System.out.println();
         System.out.println("=== SIMULATED ANNEALING ===");
@@ -72,11 +79,13 @@ public class GasolinaDemo {
         printActions(agent2.getActions());
         printInstrumentation(agent2.getInstrumentation());
 
-        System.out.printf("Beneficio total: %.2f", result2.getBeneficioTotal());
+        System.out.printf("Beneficio total: %.2f", result2.getBeneficioTotal() - result2.getDistTotal()*2.0);
         System.out.println();
         System.out.printf("Valor peticiones no asignadas: %.2f", result2.getValorPeticionesNoAsignadas());
         System.out.println();
         System.out.println("Tiempo total: " + (t2 - t1) + " ms");
+        */
+        }
     }
 
     // ==========--------- MÉTODOS AUXILIARES ==========---------
@@ -95,7 +104,7 @@ public class GasolinaDemo {
     }
 
     private static void printInstrumentation(Properties props) {
-        System.out.println("--- Instrumentación ---");
+        //System.out.println("--- Instrumentación ---");
         for (Object key : props.keySet()) {
             System.out.println(key + " : " + props.getProperty((String) key));
         }

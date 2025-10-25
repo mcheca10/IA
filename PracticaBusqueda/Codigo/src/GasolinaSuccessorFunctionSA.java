@@ -28,13 +28,11 @@ public class GasolinaSuccessorFunctionSA implements SuccessorFunction {
             if (tipo == 0) {
                 int p1 = rnd.nextInt(nPeticiones);
                 int p2 = rnd.nextInt(nPeticiones);
-                if (p1 != p2) {
-                    Peticion pet1 = board.getPeticiones().get(p1);
-                    Peticion pet2 = board.getPeticiones().get(p2);
-                    if (pet1.idCamion != -1 && pet2.idCamion != -1 && pet1.idCamion != pet2.idCamion) {
-                        ok = nuevo.intercambiarPeticion(p1, p2, pet1.idCamion, pet2.idCamion);
-                        accion = "Intercambiar aleatorio";
-                    }
+                Peticion pet1 = board.getPeticiones().get(p1);
+                Peticion pet2 = board.getPeticiones().get(p2);
+                if (pet1.idCamion != -1 && pet2.idCamion != -1) {
+                    ok = nuevo.intercambiarPeticion(p1, p2, pet1.idCamion, pet2.idCamion);
+                    accion = "Intercambiar aleatorio";
                 }
             }
             else if (tipo == 1){
