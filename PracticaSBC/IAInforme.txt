@@ -1,0 +1,26 @@
+1 Identificación problema + cosas interesantes del problema a tener en cuenta
+2 Conceptualización:
+2.1 Que conceptos extraeremos para obtener el dominio
+2.2 Problema/Subproblemas: modulos de resolución de clips
+2.3 Conocimiento experto: detallar lo que se ha obtenido del chatgpt
+3 Formalización: 
+3.1 Definir ontologia (muy detallada)
+3.2 diagrama de clases 
+3.3 clases/atrib/relaciones 
+3.4 Explicar versiones ontologías (cambios hechos) 
+3.5 metodología resolucion
+4 Implementación:
+4.1 Modulos: input, abstracción, resolución, etc, + output.
+4.2 Explicación Reglas, Funciones, Templates, etc + Flujo (orden)
+4.3 Metodología incremental: Explicar como se ha avanzado en cuanto a la implementación.
+5 Juegos de prueba (almenos 6 diferentes): (Diferentes tipos de solicitante)
+5.1 Porque se elige el caso? Que se diferencia de los demás?
+5.2 Entrada: Copiar pegar de terminal
+5.3 Salida: Copiar pegar de terminal
+5.4 Valoración
+
+
+-- IMPORTANTE --
+
+Si el código es reglas, hacer reglas evitar funciones o variables globales
+Para generar instancias se pueden hacer a mano las primeras, o generar con chatgpt (OJO), se puede usar Python (Librería FAKER). 
