@@ -1,0 +1,459 @@
+@prefix : <http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/> .
+
+<http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5> rdf:type owl:Ontology .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tiene_servicio_cercano
+:tiene_servicio_cercano rdf:type owl:ObjectProperty ;
+                        rdfs:domain :Vivienda ;
+                        rdfs:range :Servicio ;
+                        rdfs:comment "Si una vivienda tiene una distancia menor a 500 a un servicio" .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5#servicio_en_x
+:servicio_en_x rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Servicio ;
+               rdfs:range xsd:double .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5#servicio_en_y
+:servicio_en_y rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Servicio ;
+               rdfs:range xsd:double .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/altura_piso
+:altura_piso rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf owl:topDataProperty ;
+             rdfs:domain :Vivienda ;
+             rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/amueblado
+:amueblado rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf owl:topDataProperty ;
+           rdfs:domain :Vivienda ;
+           rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/busca_vivienda
+:busca_vivienda rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf owl:topDataProperty ;
+                rdfs:domain :Solicitante ;
+                rdfs:range xsd:string .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/coordx
+:coordx rdf:type owl:DatatypeProperty ;
+        rdfs:subPropertyOf owl:topDataProperty ;
+        rdfs:domain :Vivienda ;
+        rdfs:range xsd:double .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/coordy
+:coordy rdf:type owl:DatatypeProperty ;
+        rdfs:subPropertyOf owl:topDataProperty ;
+        rdfs:domain :Vivienda ;
+        rdfs:range xsd:double .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/edad_hijo_menor
+:edad_hijo_menor rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf owl:topDataProperty ;
+                 rdfs:domain :Familia ;
+                 rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/edad_mas_anciano
+:edad_mas_anciano rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf owl:topDataProperty ;
+                  rdfs:domain :Solicitante ;
+                  rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/es_soleado
+:es_soleado rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf owl:topDataProperty ;
+            rdfs:domain :Vivienda ;
+            rdfs:range xsd:string ;
+            rdfs:comment "Tiene diferentes valores: Mañana, Tarde, Todo el día" .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/movilidad_reducida
+:movilidad_reducida rdf:type owl:DatatypeProperty ;
+                    rdfs:subPropertyOf owl:topDataProperty ;
+                    rdfs:domain :Solicitante ;
+                    rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/nombre_servicio
+:nombre_servicio rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf owl:topDataProperty ;
+                 rdfs:domain :Servicio ;
+                 rdfs:range xsd:string .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/num_banos
+:num_banos rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf owl:topDataProperty ;
+           rdfs:domain :Vivienda ;
+           rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/num_habs_dobles
+:num_habs_dobles rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf owl:topDataProperty ;
+                 rdfs:domain :Vivienda ;
+                 rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/num_habs_individual
+:num_habs_individual rdf:type owl:DatatypeProperty ;
+                     rdfs:subPropertyOf owl:topDataProperty ;
+                     rdfs:domain :Vivienda ;
+                     rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/num_hijos
+:num_hijos rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf owl:topDataProperty ;
+           rdfs:domain :Familia ;
+           rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/num_personas
+:num_personas rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:domain :Solicitante ;
+              rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/permite_mascotas
+:permite_mascotas rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf owl:topDataProperty ;
+                  rdfs:domain :Vivienda ;
+                  rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/precio_mensual
+:precio_mensual rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf owl:topDataProperty ;
+                rdfs:domain :Vivienda ;
+                rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/precio_minimo
+:precio_minimo rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Solicitante ;
+               rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/prefiere_cerca
+:prefiere_cerca rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf owl:topDataProperty ;
+                rdfs:domain :Solicitante ;
+                rdfs:range xsd:string .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/presupuesto_flexible
+:presupuesto_flexible rdf:type owl:DatatypeProperty ;
+                      rdfs:subPropertyOf owl:topDataProperty ;
+                      rdfs:domain :Solicitante ;
+                      rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/presupuesto_maximo
+:presupuesto_maximo rdf:type owl:DatatypeProperty ;
+                    rdfs:subPropertyOf owl:topDataProperty ;
+                    rdfs:domain :Solicitante ;
+                    rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/superficie
+:superficie rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf owl:topDataProperty ;
+            rdfs:domain :Vivienda ;
+            rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/superficie_minima
+:superficie_minima rdf:type owl:DatatypeProperty ;
+                   rdfs:subPropertyOf owl:topDataProperty ;
+                   rdfs:domain :Solicitante ;
+                   rdfs:range xsd:integer .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tiene_aire_acondicionado
+:tiene_aire_acondicionado rdf:type owl:DatatypeProperty ;
+                          rdfs:subPropertyOf owl:topDataProperty ;
+                          rdfs:domain :Vivienda ;
+                          rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tiene_ascensor
+:tiene_ascensor rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf owl:topDataProperty ;
+                rdfs:domain :Vivienda ;
+                rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tiene_calefaccion
+:tiene_calefaccion rdf:type owl:DatatypeProperty ;
+                   rdfs:subPropertyOf owl:topDataProperty ;
+                   rdfs:domain :Vivienda ;
+                   rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tiene_coche
+:tiene_coche rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf owl:topDataProperty ;
+             rdfs:domain :Solicitante ;
+             rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tiene_mascota
+:tiene_mascota rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Solicitante ;
+               rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tiene_terraza
+:tiene_terraza rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Vivienda ;
+               rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/trabaja_en_casa
+:trabaja_en_casa rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf owl:topDataProperty ;
+                 rdfs:domain :Solicitante ;
+                 rdfs:range xsd:boolean .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/trabaja_en_x
+:trabaja_en_x rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:domain :Solicitante ;
+              rdfs:range xsd:double .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/trabaja_en_y
+:trabaja_en_y rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:domain :Solicitante ;
+              rdfs:range xsd:double .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Centro_Comercial
+:Centro_Comercial rdf:type owl:Class ;
+                  rdfs:subClassOf :Comercio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Centro_Salud
+:Centro_Salud rdf:type owl:Class ;
+              rdfs:subClassOf :Salud ;
+              owl:disjointWith :Hospital .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Cine
+:Cine rdf:type owl:Class ;
+      rdfs:subClassOf :Ocio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Colegio
+:Colegio rdf:type owl:Class ;
+         rdfs:subClassOf :Educacion .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Comercio
+:Comercio rdf:type owl:Class ;
+          rdfs:subClassOf :Servicio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Dúplex
+:Dúplex rdf:type owl:Class ;
+        rdfs:subClassOf :Vivienda .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Educacion
+:Educacion rdf:type owl:Class ;
+           rdfs:subClassOf :Servicio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Estación_Tren
+:Estación_Tren rdf:type owl:Class ;
+               rdfs:subClassOf :Transporte .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Estudiantes
+:Estudiantes rdf:type owl:Class ;
+             rdfs:subClassOf :Solicitante .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Familia
+:Familia rdf:type owl:Class ;
+         rdfs:subClassOf :Solicitante .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Hipermercado
+:Hipermercado rdf:type owl:Class ;
+              rdfs:subClassOf :Comercio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Hospital
+:Hospital rdf:type owl:Class ;
+          rdfs:subClassOf :Salud .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Individuo
+:Individuo rdf:type owl:Class ;
+           rdfs:subClassOf :Solicitante .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Instituto
+:Instituto rdf:type owl:Class ;
+           rdfs:subClassOf :Educacion .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Ocio
+:Ocio rdf:type owl:Class ;
+      rdfs:subClassOf :Servicio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Parada_Autobús
+:Parada_Autobús rdf:type owl:Class ;
+                rdfs:subClassOf :Transporte .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Parada_Metro
+:Parada_Metro rdf:type owl:Class ;
+              rdfs:subClassOf :Transporte .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Pareja
+:Pareja rdf:type owl:Class ;
+        rdfs:subClassOf :Solicitante .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Parque
+:Parque rdf:type owl:Class ;
+        rdfs:subClassOf :Zona_Verde .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Piso
+:Piso rdf:type owl:Class ;
+      rdfs:subClassOf :Vivienda .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Restaurante
+:Restaurante rdf:type owl:Class ;
+             rdfs:subClassOf :Ocio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Salud
+:Salud rdf:type owl:Class ;
+       rdfs:subClassOf :Servicio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Servicio
+:Servicio rdf:type owl:Class .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Solicitante
+:Solicitante rdf:type owl:Class .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Supermercado
+:Supermercado rdf:type owl:Class ;
+              rdfs:subClassOf :Comercio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Transporte
+:Transporte rdf:type owl:Class ;
+            rdfs:subClassOf :Servicio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Unifamiliar
+:Unifamiliar rdf:type owl:Class ;
+             rdfs:subClassOf :Vivienda .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Universidad
+:Universidad rdf:type owl:Class ;
+             rdfs:subClassOf :Educacion .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Vivienda
+:Vivienda rdf:type owl:Class .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Zona_Nocturna
+:Zona_Nocturna rdf:type owl:Class ;
+               rdfs:subClassOf :Ocio .
+
+
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Zona_Verde
+:Zona_Verde rdf:type owl:Class ;
+            rdfs:subClassOf :Servicio .
+
+
+#################################################################
+#    General axioms
+#################################################################
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Centro_Comercial
+                :Hipermercado
+                :Supermercado
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Cine
+                :Restaurante
+                :Zona_Nocturna
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Dúplex
+                :Piso
+                :Unifamiliar
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Estudiantes
+                :Familia
+                :Individuo
+                :Pareja
+              )
+] .
+
+
+###  Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi
