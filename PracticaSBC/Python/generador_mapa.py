@@ -6,10 +6,10 @@ NOMBRE_ARCHIVO_CLP = "new_instancies.clp"
 NOMBRE_IMAGEN = "ciutat.png"
 NUM_VIVIENDAS = 100
 NUM_SERVICIOS = 40
-NUM_SOLICITANTES = 8  # Se generarán para encajar con las viviendas
+NUM_SOLICITANTES = 8
 CIUDAD_SIZE = 5000
 
-print("--- INICIANDO GENERADOR 'CUPIDO' (Garantiza Matches) ---")
+print("--- INICIANDO GENERADOR MAPA v2 (Garantiza Matches) ---")
 
 try:
     import matplotlib.pyplot as plt
@@ -20,7 +20,7 @@ except ImportError:
     print("Falta libreria. Ejecuta: pip install matplotlib faker")
     sys.exit(1)
 
-# Estilos visuales
+# Estilos visuales diferentes para cada tipo de servicio
 ESTILOS = {
     "Centro_Salud": {"c": "red", "m": "P", "label": "Salud"},
     "Colegio": {"c": "cyan", "m": "s", "label": "Educación"},
@@ -84,22 +84,17 @@ print("Generando solicitantes a medida...")
 clases_sol = ["Familia", "Estudiantes", "Pareja", "Individuo"]
 
 for i in range(NUM_SOLICITANTES):
-    # --- TRUCO: ELEGIMOS UNA CASA OBJETIVO ---
     casa_target = random.choice(viviendas)
-    
     # Datos básicos basados en la casa objetivo
     presupuesto = casa_target['precio'] + random.randint(100, 500) # Tienen dinero suficiente
     tipo_buscado = casa_target['tipo']
-    
     # Ajustar ocupantes a la capacidad
     capacidad_max = casa_target['capacidad']
     num_personas = random.randint(1, max(1, capacidad_max))
-    
     # Decidir clase de persona lógica según capacidad
     if num_personas == 1: clase = "Individuo"
     elif num_personas == 2: clase = random.choice(["Pareja", "Estudiantes"])
     else: clase = random.choice(["Familia", "Estudiantes"])
-    
     # Ubicación trabajo (Aleatoria, esto puede penalizar pero no descartar)
     tx, ty, _ = get_coords_in_barrio()
 
@@ -133,13 +128,8 @@ with open(NOMBRE_ARCHIVO_CLP, "w", encoding="utf-8") as f:
 
     # Solicitantes
     for sol in solicitantes:
-        # Extra slots para familia
         extra = "(num_hijos 1) (edad_hijo_menor 10)" if sol['clase'] == "Familia" else ""
-        
-        # OJO: Si buscan "Piso", a veces ponemos "Piso Unifamiliar" para que CLIPS no falle si busca varios
-        # Pero aquí ponemos directo el tipo de la casa target para asegurar el match
         busca_str = sol['busca']
-        
         f.write(f"""    ([{sol['id']}] of {sol['clase']} 
         (trabaja_en_x {sol['trabajo_x']}) (trabaja_en_y {sol['trabajo_y']}) 
         (presupuesto_maximo {sol['presupuesto']}) (busca_vivienda {busca_str}) 
@@ -178,7 +168,7 @@ for sol in solicitantes:
     # plt.plot([sol['trabajo_x'], target['x']], [sol['trabajo_y'], target['y']], 'k--', alpha=0.1)
 
 plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', title="Leyenda")
-plt.title(f"Mapa 'Cupido': {NUM_SOLICITANTES} Matches Diseñados")
+plt.title(f"Mapa de la ciudad: {NUM_SOLICITANTES} Matches Diseñados")
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.savefig(NOMBRE_IMAGEN, dpi=100)

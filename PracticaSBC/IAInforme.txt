@@ -24,3 +24,7 @@
 
 Si el código es reglas, hacer reglas evitar funciones o variables globales
 Para generar instancias se pueden hacer a mano las primeras, o generar con chatgpt (OJO), se puede usar Python (Librería FAKER). 
+
+
+
+Fer comparacions amb variables abstractes i si fa falta al refinament tornar a comprovar els preus en nombre.

@@ -1,5 +1,7 @@
 ;;; =========================================================
-;;; SISTEMA DE RECOMENDACIÓN DE VIVIENDA - VERSIÓN FINAL CON UMBRAL DE FALLOS
+;;; SISTEMA DE RECOMENDACIÓN DE VIVIENDA
+;;; Esta version es un prototipo de la version final, en la que se le pide al usuario el perfil del solicitante
+;;; y se le muestra una lista de viviendas que cumplen con sus requisitos
 ;;; =========================================================
 
 (defmodule MAIN (export ?ALL))
@@ -393,7 +395,7 @@
 )
 
 ;;; ===============================================================
-;;; REGLA NUEVA: CONTROL DE CALIDAD - 3 FALLOS = DESCARTADO
+;;; REGLA NUEVA: CONTROL DE CALIDAD - 5 FALLOS = DESCARTADO
 ;;; ===============================================================
 
 (defrule REQUISITOS::exceso-de-incumplimientos
@@ -401,7 +403,7 @@
     ?r <- (Recomendacion (estado PARCIALMENTE_ADECUADO) (motivos $?lista-motivos))
     
     ;; Contamos si hay 3 o más elementos en la lista de motivos
-    (test (>= (length$ $?lista-motivos) 3))
+    (test (>= (length$ $?lista-motivos) 5))
     =>
     ;; Cambiamos el estado a DESCARTADO y añadimos el motivo final
     (modify ?r (estado DESCARTADO) 
