@@ -1,30 +1,28 @@
 ;;; =========================================================
-;;; SISTEMA EXPERTO INMOBILIARIO - VERSIÓN AUTOMÁTICA (BATCH)
-;;; Ejecuta la lógica sobre las instancias cargadas
+;;; SISTEMA EXPERTO INMOBILIARIO - BATCH
 ;;; =========================================================
 
 ;;; ---------------------------------------------------------
 ;;; 1. DEFINICIÓN DE MÓDULOS
 ;;; ---------------------------------------------------------
 (defmodule MAIN (export ?ALL))
-(defmodule ABSTRACCION (import MAIN ?ALL) (export ?ALL)) ;;; Datos Casa -> Rasgos Casa
-(defmodule ASOCIACION (import MAIN ?ALL) (export ?ALL))  ;;; Cruzar Usuario <-> Casa
-(defmodule REFINAMIENTO (import MAIN ?ALL) (export ?ALL));;; Puntuación
-(defmodule INFORME (import MAIN ?ALL) (export ?ALL))     ;;; Salida
+(defmodule ABSTRACCION (import MAIN ?ALL) (export ?ALL))
+(defmodule ASOCIACION (import MAIN ?ALL) (export ?ALL))
+(defmodule REFINAMIENTO (import MAIN ?ALL) (export ?ALL))
+(defmodule INFORME (import MAIN ?ALL) (export ?ALL))
 
 ;;; ---------------------------------------------------------
-;;; 2. TEMPLATES Y FUNCIONES
+;;; 2. TEMPLATES
 ;;; ---------------------------------------------------------
 
 (deftemplate MAIN::Recomendacion
     (slot solicitante (type INSTANCE-NAME)) 
     (slot vivienda (type INSTANCE-NAME))
-    (slot estado (type SYMBOL) (allowed-values INDETERMINADO DESCARTADO VALID MUY_RECOMENDABLE) (default INDETERMINADO))
+    (slot estado (type SYMBOL) (allowed-values INDETERMINADO DESCARTADO PARCIALMENTE_ADECUADO VALID MUY_RECOMENDABLE) (default INDETERMINADO))
     (multislot motivos (type STRING))
     (slot puntuacion (type INTEGER) (default 0))
 )
 
-;;; Rasgo: Características ABSTRACTAS de la vivienda (independientes del usuario)
 (deftemplate MAIN::Rasgo
     (slot objeto (type INSTANCE-NAME))
     (slot caracteristica (type SYMBOL)) 
@@ -39,21 +37,20 @@
    (sqrt (+ (* (- ?x2 ?x1) (- ?x2 ?x1)) (* (- ?y2 ?y1) (- ?y2 ?y1))))
 )
 
-;;; --- INICIO AUTOMÁTICO ---
+;;; --- REGLA DE INICIO ---
 (defrule MAIN::inicio-batch
     =>
     (printout t "=================================================" crlf)
-    (printout t "   EJECUTANDO SISTEMA CON JUEGOS DE PRUEBA       " crlf)
+    (printout t "   EJECUTANDO SISTEMA (JUEGOS DE PRUEBA)         " crlf)
     (printout t "=================================================" crlf)
     (assert (ControlFase (fase ABSTRACCION)))
     (focus ABSTRACCION)
 )
 
 ;;; =========================================================
-;;; MÓDULO ABSTRACCION: Datos Numéricos -> Rasgos Simbólicos
+;;; MÓDULO ABSTRACCION
 ;;; =========================================================
 
-;;; 1. ECONOMÍA
 (defrule ABSTRACCION::abs-precio-impagable
     (object (is-a Solicitante) (presupuesto_maximo ?max))
     (object (is-a Vivienda) (name ?v) (precio_mensual ?p))
@@ -70,7 +67,6 @@
     (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor CHOLLO)))
 )
 
-;;; 2. ESPACIO
 (defrule ABSTRACCION::abs-espacio-hacinado
     (object (is-a Solicitante) (num_personas ?np))
     (object (is-a Vivienda) (name ?v) (num_habs_dobles ?hd) (num_habs_individual ?hi))
@@ -79,7 +75,6 @@
     (assert (Rasgo (objeto ?v) (caracteristica ESPACIO) (valor INSUFICIENTE)))
 )
 
-;;; 3. ACCESIBILIDAD
 (defrule ABSTRACCION::abs-accesibilidad-mala
     (object (is-a Vivienda) (name ?v) (tiene_ascensor FALSE) (altura_piso ?h))
     (test (> ?h 0))
@@ -87,7 +82,6 @@
     (assert (Rasgo (objeto ?v) (caracteristica ACCESIBILIDAD) (valor MALA)))
 )
 
-;;; 4. SERVICIOS (Ejemplos para llegar a 50 reglas)
 (defrule ABSTRACCION::abs-servicios-educacion
     (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s))
     (exists (object (is-a Educacion) (name ?e)) (test (member$ ?e ?s)))
@@ -116,14 +110,11 @@
     (assert (Rasgo (objeto ?v) (caracteristica ENTORNO) (valor RELAX)))
 )
 
-;;; 5. POLITICAS
 (defrule ABSTRACCION::abs-mascotas
     (object (is-a Vivienda) (name ?v) (permite_mascotas FALSE))
     =>
     (assert (Rasgo (objeto ?v) (caracteristica POLITICA) (valor NO_MASCOTAS)))
 )
-
-;;; 6. LUMINOSIDAD
 
 (defrule ABSTRACCION::abs-luz-natural
     (object (is-a Vivienda) (name ?v) (es_soleado "Nada"))
@@ -137,13 +128,6 @@
     (assert (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor EXCELENTE)))
 )
 
-(defrule ABSTRACCION::abs-luz-pobre
-    (object (is-a Vivienda) (name ?v) (es_soleado "Nada"))
-    =>
-    (assert (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor OSCURO)))
-)
-
-;;; 7. TRANSPORTE
 (defrule ABSTRACCION::abs-transporte-metro
     (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s))
     (exists (object (is-a Parada_Metro) (name ?m)) (test (member$ ?m ?s)))
@@ -159,7 +143,6 @@
     (assert (Rasgo (objeto ?v) (caracteristica CONECTIVIDAD) (valor LENTA)))
 )
 
-;;; 8. ENTORNO
 (defrule ABSTRACCION::abs-zona-comercial
     (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s))
     (exists (object (is-a Supermercado) (name ?sup)) (test (member$ ?sup ?s)))
@@ -175,14 +158,12 @@
     (assert (Rasgo (objeto ?v) (caracteristica ZONA) (valor NATURAL)))
 )
 
-;;; 9. CONFORT TÉRMICO
 (defrule ABSTRACCION::abs-sin-climatizacion
     (object (is-a Vivienda) (name ?v) (tiene_calefaccion FALSE) (tiene_aire_acondicionado FALSE))
     =>
     (assert (Rasgo (objeto ?v) (caracteristica CONFORT) (valor BAJO)))
 )
 
-;;; 10. TIPO DE PISO
 (defrule ABSTRACCION::abs-piso-bajo
     (object (is-a Vivienda) (name ?v) (altura_piso 0))
     =>
@@ -195,9 +176,6 @@
     (assert (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor ATICO)))
 )
 
-;;; 11. SERVICIOS
-
-;;; Detectar Supermercado
 (defrule ABSTRACCION::abs-comercio-basico
     (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s))
     (exists (object (is-a Supermercado) (name ?sup)) (test (member$ ?sup ?s)))
@@ -205,7 +183,6 @@
     (assert (Rasgo (objeto ?v) (caracteristica SERVICIOS) (valor ABASTECIMIENTO)))
 )
 
-;;; Detectar Zonas Deportivas
 (defrule ABSTRACCION::abs-zona-deporte
     (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s))
     (exists (object (is-a Parque) (name ?p)) (test (member$ ?p ?s)))
@@ -221,23 +198,17 @@
     (focus ASOCIACION)
 )
 
-
-
 ;;; =========================================================
-;;; MÓDULO ASOCIACION: Lógica Heurística (Match Usuario-Rasgo)
+;;; MÓDULO ASOCIACION
 ;;; =========================================================
 
-;;; Inicializar recomendaciones
+;;; Regla CLAVE para crear todas las combinaciones posibles
 (defrule ASOCIACION::init-recom
     (object (is-a Solicitante) (name ?s))
     (object (is-a Vivienda) (name ?v))
     =>
     (assert (Recomendacion (solicitante ?s) (vivienda ?v) (estado INDETERMINADO)))
 )
-
-;;; ---------------------------------------------------------
-;;; A. RESTRICCIONES DURAS (HARD) -> DESCARTADO
-;;; ---------------------------------------------------------
 
 (defrule ASOCIACION::filtrar-precio
     ?r <- (Recomendacion (vivienda ?v) (estado INDETERMINADO))
@@ -269,27 +240,23 @@
     (modify ?r (estado DESCARTADO) (motivos "Inaccesible (Piso alto sin ascensor)."))
 )
 
-;;; NUEVA: Los dúplex suelen tener escaleras internas, peligroso para ancianos
 (defrule ASOCIACION::filtrar-duplex-ancianos
     ?r <- (Recomendacion (vivienda ?v) (estado INDETERMINADO))
     (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 75)))
     (object (is-a Dúplex) (name ?v))
     =>
-    (modify ?r (estado DESCARTADO) (motivos "Dúplex descartado (escaleras internas peligrosas)."))
+    (modify ?r (estado DESCARTADO) (motivos "Duplex descartado (escaleras internas peligrosas)."))
 )
 
-;;; NUEVA: Familia numerosa en estudio/apartamento pequeño
 (defrule ASOCIACION::filtrar-familia-estudio
     ?r <- (Recomendacion (vivienda ?v) (estado INDETERMINADO))
     (object (is-a Familia) (num_personas ?np&:(> ?np 3)))
-    (object (is-a Vivienda) (name ?v) (num_habs_dobles 0)) ; Si no tiene hab doble
+    (object (is-a Vivienda) (name ?v) (num_habs_dobles 0))
     =>
-    (modify ?r (estado DESCARTADO) (motivos "Distribución inviable para familia."))
+    (modify ?r (estado DESCARTADO) (motivos "Distribucion inviable para familia."))
 )
 
-;;; ---------------------------------------------------------
-;;; B. RESTRICCIONES SUAVES (SOFT NEGATIVAS) -> PARCIALMENTE
-;;; ---------------------------------------------------------
+;;; AVISOS (PARCIAL)
 
 (defrule ASOCIACION::aviso-oscuridad-teletrabajo
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (motivos $?m))
@@ -311,19 +278,17 @@
     (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Zona muy ruidosa"))
 )
 
-;;; NUEVA: Mascota en piso sin terraza (aviso, no descarte)
 (defrule ASOCIACION::aviso-mascota-sin-exterior
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (motivos $?m))
     (test (neq ?st DESCARTADO))
     (object (is-a Solicitante) (tiene_mascota TRUE))
     (object (is-a Vivienda) (name ?v) (tiene_terraza FALSE))
-    (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor BAJOS)) ; Si no es bajo jardin
+    (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor BAJOS))
     (test (not (member$ "Mascota sin espacio exterior" $?m)))
     =>
     (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Mascota sin espacio exterior"))
 )
 
-;;; NUEVA: Familia en Bajos ruidosos
 (defrule ASOCIACION::aviso-familia-bajos
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (motivos $?m))
     (test (neq ?st DESCARTADO))
@@ -335,22 +300,49 @@
     (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Bajos con poca intimidad"))
 )
 
-;;; NUEVA: Coche sin parking fácil
 (defrule ASOCIACION::aviso-coche-parking
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (motivos $?m))
     (test (neq ?st DESCARTADO))
     (object (is-a Solicitante) (tiene_coche TRUE))
-    ;; Asumimos que si no es unifamiliar ni tiene parking en servicios...
     (test (neq (class ?v) Unifamiliar)) 
-    (not (Rasgo (objeto ?v) (caracteristica ZONA) (valor COMERCIAL))) ; En zonas comerciales es dificil aparcar
+    (not (Rasgo (objeto ?v) (caracteristica ZONA) (valor COMERCIAL)))
     (test (not (member$ "Dificil aparcamiento en la calle" $?m)))
     =>
     (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Dificil aparcamiento en la calle"))
 )
 
-;;; ---------------------------------------------------------
-;;; C. RECOMENDACIONES (BONUS) -> MUY RECOMENDABLE
-;;; ---------------------------------------------------------
+(defrule ASOCIACION::aviso-pareja-aislada
+    ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado ?st) (motivos $?m))
+    (test (neq ?st DESCARTADO))
+    (object (is-a Pareja) (edad_mas_anciano ?e&:(< ?e 40)))
+    (not (Rasgo (objeto ?v) (caracteristica ZONA) (valor COMERCIAL)))
+    (not (Rasgo (objeto ?v) (caracteristica ENTORNO) (valor RUIDOSO)))
+    (test (not (member$ "Zona muy apagada para gente joven" $?m)))
+    =>
+    (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Zona muy apagada para gente joven"))
+)
+
+(defrule ASOCIACION::aviso-individuo-bajos
+    ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado ?st) (motivos $?m))
+    (test (neq ?st DESCARTADO))
+    (object (is-a Individuo))
+    (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor BAJOS))
+    (test (not (member$ "Seguridad: Planta baja para vivir solo" $?m)))
+    =>
+    (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Seguridad: Planta baja para vivir solo"))
+)
+
+(defrule ASOCIACION::aviso-familia-abastecimiento
+    ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado ?st) (motivos $?m))
+    (test (neq ?st DESCARTADO))
+    (object (is-a Familia))
+    (not (Rasgo (objeto ?v) (caracteristica SERVICIOS) (valor ABASTECIMIENTO)))
+    (test (not (member$ "Falta supermercado para compra familiar" $?m)))
+    =>
+    (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Falta supermercado para compra familiar"))
+)
+
+;;; RECOMENDACIONES (MUY RECOMENDABLE)
 
 (defrule ASOCIACION::recomendar-familia-educacion
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (motivos $?m))
@@ -377,9 +369,9 @@
     (test (neq ?st DESCARTADO))
     (object (is-a Estudiantes))
     (Rasgo (objeto ?v) (caracteristica CONECTIVIDAD) (valor RAPIDA))
-    (test (not (member$ "Conexión rápida Universidad" $?m)))
+    (test (not (member$ "Conexion rapida Universidad" $?m)))
     =>
-    (modify ?r (estado MUY_RECOMENDABLE) (motivos $?m "Conexión rápida Universidad"))
+    (modify ?r (estado MUY_RECOMENDABLE) (motivos $?m "Conexion rapida Universidad"))
 )
 
 (defrule ASOCIACION::recomendar-anciano-relax
@@ -401,80 +393,42 @@
     (modify ?r (estado MUY_RECOMENDABLE) (motivos $?m "Gran precio"))
 )
 
-;;; NUEVA: Recomendar Ático a Parejas (Calidad de vida)
 (defrule ASOCIACION::recomendar-pareja-atico
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (motivos $?m))
     (test (neq ?st DESCARTADO))
     (object (is-a Pareja))
     (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor ATICO))
-    (test (not (member$ "Ático con terraza" $?m)))
+    (test (not (member$ "Atico con terraza" $?m)))
     =>
-    (modify ?r (estado MUY_RECOMENDABLE) (motivos $?m "Ático con terraza"))
+    (modify ?r (estado MUY_RECOMENDABLE) (motivos $?m "Atico con terraza"))
 )
 
-;;; Regla de limpieza (Si no se ha activado nada, se queda en VALID)
-(defrule ASOCIACION::validar-por-defecto
-    (declare (salience -5))
-    ?r <- (Recomendacion (estado INDETERMINADO))
-    =>
-    (modify ?r (estado VALID))
-)
-
-;;; Pareja busca ocio cultural (Cine/Teatro)
 (defrule ASOCIACION::recomendar-pareja-ocio
     ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado ?st) (motivos $?m))
     (test (neq ?st DESCARTADO))
     (object (is-a Pareja))
-    (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s))
-    (exists (object (is-a Cine) (name ?c)) (test (member$ ?c ?s)))
+    (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?servicios))
+    (exists (object (is-a Cine) (name ?c)) (test (member$ ?c ?servicios)))
     (test (not (member$ "Ocio cultural cerca" $?m)))
     =>
     (modify ?r (estado MUY_RECOMENDABLE) (motivos $?m "Ocio cultural cerca"))
 )
 
-;;; Pareja joven evita zonas dormitorio (quieren vida)
-(defrule ASOCIACION::aviso-pareja-aislada
-    ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado ?st) (motivos $?m))
-    (test (neq ?st DESCARTADO))
-    (object (is-a Pareja) (edad_mas_anciano ?e&:(< ?e 40)))
-    (not (Rasgo (objeto ?v) (caracteristica ZONA) (valor COMERCIAL)))
-    (not (Rasgo (objeto ?v) (caracteristica ENTORNO) (valor RUIDOSO))) ;; Ni tiendas ni bares
-    (test (not (member$ "Zona muy apagada para gente joven" $?m)))
-    =>
-    (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Zona muy apagada para gente joven"))
-)
-
-;;; Individuo valora seguridad (evita bajos en zonas solas)
-(defrule ASOCIACION::aviso-individuo-bajos
-    ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado ?st) (motivos $?m))
-    (test (neq ?st DESCARTADO))
-    (object (is-a Individuo))
-    (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor BAJOS))
-    (test (not (member$ "Seguridad: Planta baja para vivir solo" $?m)))
-    =>
-    (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Seguridad: Planta baja para vivir solo"))
-)
-
-;;; Familia necesita supermercado cerca (Logística pesada)
-(defrule ASOCIACION::aviso-familia-abastecimiento
-    ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado ?st) (motivos $?m))
-    (test (neq ?st DESCARTADO))
-    (object (is-a Familia))
-    (not (Rasgo (objeto ?v) (caracteristica SERVICIOS) (valor ABASTECIMIENTO)))
-    (test (not (member$ "Falta supermercado para compra familiar" $?m)))
-    =>
-    (modify ?r (estado PARCIALMENTE_ADECUADO) (motivos $?m "Falta supermercado para compra familiar"))
-)
-
-;;; Anciano y farmacia/supermercado
 (defrule ASOCIACION::recomendar-anciano-servicios
     ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado ?st) (motivos $?m))
     (test (neq ?st DESCARTADO))
     (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 70)))
     (Rasgo (objeto ?v) (caracteristica SERVICIOS) (valor ABASTECIMIENTO))
-    (test (not (member$ "Servicios básicos a pie" $?m)))
+    (test (not (member$ "Servicios basicos a pie" $?m)))
     =>
-    (modify ?r (estado MUY_RECOMENDABLE) (motivos $?m "Servicios básicos a pie"))
+    (modify ?r (estado MUY_RECOMENDABLE) (motivos $?m "Servicios basicos a pie"))
+)
+
+(defrule ASOCIACION::validar-por-defecto
+    (declare (salience -5))
+    ?r <- (Recomendacion (estado INDETERMINADO))
+    =>
+    (modify ?r (estado VALID))
 )
 
 (defrule ASOCIACION::siguiente
@@ -486,10 +440,9 @@
 )
 
 ;;; =========================================================
-;;; MÓDULO REFINAMIENTO: Puntuación Final
+;;; MÓDULO REFINAMIENTO
 ;;; =========================================================
 
-;;; Puntos base según estado cualitativo
 (defrule REFINAMIENTO::base-muy-rec
     ?r <- (Recomendacion (estado MUY_RECOMENDABLE) (puntuacion ?p))
     => (modify ?r (puntuacion (+ ?p 100))))
@@ -501,13 +454,7 @@
 (defrule REFINAMIENTO::base-parcial
     ?r <- (Recomendacion (estado PARCIALMENTE_ADECUADO) (puntuacion ?p))
     => (modify ?r (puntuacion (+ ?p 10))))
-    
 
-;;; ---------------------------------------------------------
-;;; CÁLCULOS MATEMÁTICOS DE BONIFICACIÓN
-;;; ---------------------------------------------------------
-
-;;; 1. Bonus por Ahorro (Matemático)
 (defrule REFINAMIENTO::bonus-ahorro-progresivo
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (puntuacion ?p) (motivos $?m))
     (test (neq ?st DESCARTADO))
@@ -516,18 +463,16 @@
     (test (< ?pr ?max))
     =>
     (bind ?ahorro (- ?max ?pr))
-    ;; 1 punto extra por cada 10€ de ahorro
     (bind ?extra (div ?ahorro 10))
     (modify ?r (puntuacion (+ ?p ?extra)))
 )
 
-;;; 2. Bonus por Proximidad Trabajo (Matemático)
 (defrule REFINAMIENTO::bonus-distancia-trabajo
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (puntuacion ?p) (motivos $?m))
     (test (neq ?st DESCARTADO))
     (object (is-a Solicitante) (trabaja_en_x ?tx) (trabaja_en_y ?ty))
     (object (is-a Vivienda) (name ?v) (coordx ?vx) (coordy ?vy))
-    (test (neq ?tx nil)) ;; Solo si tiene coordenadas de trabajo
+    (test (neq ?tx nil))
     =>
     (bind ?dist (distancia ?tx ?ty ?vx ?vy))
     (if (< ?dist 1000) then
@@ -537,7 +482,6 @@
     )
 )
 
-;;; 3. Bonus Calidad/Precio: Aire Acondicionado
 (defrule REFINAMIENTO::bonus-aire-acondicionado
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (puntuacion ?p))
     (test (neq ?st DESCARTADO))
@@ -546,7 +490,6 @@
     (modify ?r (puntuacion (+ ?p 10)))
 )
 
-;;; 4. Bonus Calidad: Muebles (Ahorro inicial para el usuario)
 (defrule REFINAMIENTO::bonus-amueblado
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (puntuacion ?p) (motivos $?m))
     (test (neq ?st DESCARTADO))
@@ -555,7 +498,6 @@
     (modify ?r (puntuacion (+ ?p 15)) (motivos $?m "Amueblado (listo para entrar)"))
 )
 
-;;; 5. Bonus Espacio Exterior
 (defrule REFINAMIENTO::bonus-terraza
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (puntuacion ?p))
     (test (neq ?st DESCARTADO))
@@ -564,11 +506,6 @@
     (modify ?r (puntuacion (+ ?p 10)))
 )
 
-;;; ---------------------------------------------------------
-;;; PENALIZACIONES NUMÉRICAS
-;;; ---------------------------------------------------------
-
-;;; 6. Penalización: Sin ascensor (aunque no sea anciano, molesta)
 (defrule REFINAMIENTO::penalizacion-sin-ascensor
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (puntuacion ?p))
     (test (neq ?st DESCARTADO))
@@ -577,7 +514,6 @@
     (modify ?r (puntuacion (- ?p 15)))
 )
 
-;;; 7. Penalización: Conectividad Pobre (si no es estudiante)
 (defrule REFINAMIENTO::penalizacion-conectividad-mala
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (puntuacion ?p))
     (test (neq ?st DESCARTADO))
@@ -586,15 +522,6 @@
     (modify ?r (puntuacion (- ?p 10)))
 )
 
-(defrule REFINAMIENTO::siguiente
-    (declare (salience -10))
-    ?f <- (ControlFase (fase REFINAMIENTO))
-    =>
-    (modify ?f (fase INFORME))
-    (focus INFORME)
-)
-
-;;; Penalizar pisos interiores (aunque no teletrabajes, es triste)
 (defrule REFINAMIENTO::penalizacion-general-oscuro
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (puntuacion ?p))
     (test (neq ?st DESCARTADO))
@@ -603,19 +530,16 @@
     (modify ?r (puntuacion (- ?p 15)))
 )
 
-;;; Bonificar número de baños (Ratio personas/baño)
 (defrule REFINAMIENTO::bonus-ratio-banos
     ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado ?st) (puntuacion ?p) (motivos $?m))
     (test (neq ?st DESCARTADO))
     (object (is-a Solicitante) (num_personas ?np))
     (object (is-a Vivienda) (name ?v) (num_banos ?nb))
-    ;; Si hay al menos un baño por cada 2 personas, es un lujo
     (test (<= ?np (* ?nb 2))) 
     =>
-    (modify ?r (puntuacion (+ ?p 10)) (motivos $?m "Buen ratio baños/personas"))
+    (modify ?r (puntuacion (+ ?p 10)) (motivos $?m "Buen ratio banos/personas"))
 )
 
-;;; Bonificar calefacción (Siempre es bueno)
 (defrule REFINAMIENTO::bonus-calefaccion-general
     ?r <- (Recomendacion (vivienda ?v) (estado ?st) (puntuacion ?p))
     (test (neq ?st DESCARTADO))
@@ -652,13 +576,6 @@
     (printout t "   Estado: " ?e " (" ?p " pts)" crlf)
     (if (> (length$ $?m) 0) then (printout t "   Motivos: " (implode$ $?m) crlf))
     (printout t "----------------------------------------" crlf)
-)
-
-(defrule INFORME::imprimir-descarte
-    ?r <- (Recomendacion (solicitante ?s) (vivienda ?v) (estado DESCARTADO) (motivos $?m))
-    =>
-    ;; Descomenta la siguiente línea si quieres ver los descartes (puede saturar la consola)
-    ;; (printout t "SOLICITANTE: " ?s " [X] RECHAZA " ?v " por: " (implode$ $?m) crlf)
 )
 
 (defrule INFORME::fin
