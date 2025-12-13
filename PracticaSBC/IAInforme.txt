@@ -17,7 +17,7 @@
 5.1 Porque se elige el caso? Que se diferencia de los demás?
 5.2 Entrada: Copiar pegar de terminal
 5.3 Salida: Copiar pegar de terminal
-5.4 Valoración
+5.4 Valoración.
 
 
 -- IMPORTANTE --
