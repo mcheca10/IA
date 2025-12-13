@@ -171,22 +171,23 @@
 
 (defrule PREGUNTAS::Esp-Estudiante 
     (FaseEntrevista (estado especificas)) 
-    ?s <- (object (is-a Estudiantes) (necesita_fiesta ?f&:(eq ?f nil))) 
+    ?s <- (object (is-a Estudiantes) ) 
     =>
     (send ?s put-necesita_fiesta (if (yes-or-no-p "E. ¿Buscas zona de ambiente?") then SI else NO)))
 
 (defrule PREGUNTAS::Esp-CoLiving 
     (FaseEntrevista (estado especificas)) 
-    ?s <- (object (is-a CoLiving) (bano_privado ?b&:(eq ?b nil))) 
+    ?s <- (object (is-a CoLiving) ) 
     =>
     (send ?s put-bano_privado (if (yes-or-no-p "C. ¿Baño privado imprescindible?") then SI else NO))
     (send ?s put-habitaciones_individuales (if (yes-or-no-p "C. ¿Necesitais habitaciones individuales todos?") then SI else NO)))
 
 (defrule PREGUNTAS::Esp-Pareja 
     (FaseEntrevista (estado especificas)) 
-    ?s <- (object (is-a Pareja) (plan_familia_corto_plazo ?p&:(eq ?p nil))) 
+    ?s <- (object (is-a Pareja) ) 
     =>
     (send ?s put-plan_familia_corto_plazo (if (yes-or-no-p "P. ¿Planeais hijos a corto plazo?") then SI else NO)))
+
 
 (defrule PREGUNTAS::Finalizar 
     (declare (salience -10)) 
@@ -200,6 +201,25 @@
 ;;; =========================================================
 ;;; MÓDULO ABSTRACCIÓN
 ;;; =========================================================
+
+(defrule ABSTRACCION::detectar-servicios-cercanos
+    (declare (salience 30)) ;; Prioridad alta para ejecutarse antes de analizar el entorno
+    
+    ;; Capturamos la vivienda y su lista actual de servicios
+    ?v <- (object (is-a Vivienda) (coordx ?vx) (coordy ?vy) (tiene_servicio_cercano $?lista))
+    
+    ;; Capturamos un servicio cualquiera
+    (object (is-a Servicio) (name ?s) (servicio_en_x ?sx) (servicio_en_y ?sy))
+    
+    ;; Comprobamos distancia (500 metros)
+    (test (< (distancia ?vx ?vy ?sx ?sy) 500))
+    
+    ;; Comprobamos que NO esté ya en la lista para no duplicar
+    (test (not (member$ ?s $?lista)))
+    =>
+    ;; Añadimos el servicio a la lista de la vivienda
+    (slot-insert$ ?v tiene_servicio_cercano 1 ?s)
+)
 
 (defrule ABSTRACCION::Calculo-Financiero
     (declare (salience 20))
@@ -241,11 +261,23 @@
 (defrule ABSTRACCION::Gen-Rasgo-Coste
     (object (is-a Solicitante) (techo_maximo_seguro ?max))
     (object (is-a Vivienda) (name ?v) (precio_mensual ?p)) 
-    (test (if (numberp ?max) then (> ?max 0) else FALSE)) ;; Evita usar 0.0 por defecto sin calcular
-    (not (Rasgo (objeto ?v) (caracteristica COSTE))) ;; Evita bucle
+    (test (if (numberp ?max) then (> ?max 0) else FALSE)) 
+    (not (Rasgo (objeto ?v) (caracteristica COSTE))) 
     =>
-    (if (> ?p ?max) then (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor IMPAGABLE)))
-    else (if (<= ?p (- ?max 200)) then (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor CHOLLO)))))
+    (if (> ?p (+ ?max 200)) then 
+        ;; Se pasa por más de 200 -> IMPAGABLE (Se descartará)
+        (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor IMPAGABLE)))
+    else 
+        (if (> ?p ?max) then 
+            ;; Se pasa, pero poco (<= 200) -> CARO (Se avisará)
+            (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor CARO)))
+        else 
+            (if (<= ?p (- ?max 200)) then 
+                ;; Muy barato -> CHOLLO
+                (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor CHOLLO)))
+            )
+        )
+    )
 )
 
 (defrule ABSTRACCION::Gen-Rasgo-Accesibilidad
@@ -346,15 +378,24 @@
 (defrule ASOCIACION::aviso-confort-frio ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Solicitante) (exigencia_termica CRITICA)) (Rasgo(objeto ?v)(caracteristica CONFORT)(valor BAJO)) (test (not (member$ "Riesgo Termico" $?m))) => (modify ?r (estado PARCIALMENTE_ADECUADO)(motivos $?m "Riesgo Termico")))
 (defrule ASOCIACION::aviso-coche-parking ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Solicitante) (tiene_coche TRUE)) (test (neq (class ?v) Unifamiliar)) (not (Rasgo(objeto ?v)(caracteristica ZONA)(valor COMERCIAL))) (test (not (member$ "Dificil aparcar" $?m))) => (modify ?r (estado PARCIALMENTE_ADECUADO)(motivos $?m "Dificil aparcar")))
 (defrule ASOCIACION::aviso-individuo-bajos ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Individuo)) (Rasgo(objeto ?v)(caracteristica TIPOLOGIA)(valor BAJOS)) (test (not (member$ "Seguridad Bajos" $?m))) => (modify ?r (estado PARCIALMENTE_ADECUADO)(motivos $?m "Seguridad Bajos")))
+(defrule ASOCIACION::aviso-precio-caro
+    ?r <- (Recomendacion (vivienda ?v) (estado ?st) (motivos $?m))
+    (test (neq ?st DESCARTADO))
+    (Rasgo (objeto ?v) (caracteristica COSTE) (valor CARO))
+    (test (not (member$ "Precio alto (supera limite pero <200)" $?m)))
+    =>
+    (modify ?r (estado PARCIALMENTE_ADECUADO) 
+               (motivos $?m "Precio alto (supera limite pero <200)"))
+)
 
 ;;; C. RECOMENDACIONES
-(defrule ASOCIACION::recomendar-familia-educacion ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Familia)) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor EDUCATIVO)) (test (not (member$ "Colegios cerca" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Colegios cerca")))
-(defrule ASOCIACION::recomendar-estudiante-fiesta ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Estudiantes)) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor RUIDOSO)) (test (not (member$ "Ambiente" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Ambiente")))
-(defrule ASOCIACION::recomendar-estudiante-transporte ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Estudiantes)) (Rasgo(objeto ?v)(caracteristica CONECTIVIDAD)(valor RAPIDA)) (test (not (member$ "Conexión Uni" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Conexión Uni")))
-(defrule ASOCIACION::recomendar-anciano-relax ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 65))) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor RELAX)) (test (not (member$ "Zona tranquila" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Zona tranquila")))
-(defrule ASOCIACION::recomendar-chollo ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (Rasgo(objeto ?v)(caracteristica COSTE)(valor CHOLLO)) (test (not (member$ "Gran precio" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Gran precio")))
-(defrule ASOCIACION::recomendar-pareja-atico ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Pareja)) (Rasgo(objeto ?v)(caracteristica TIPOLOGIA)(valor ATICO)) (test (not (member$ "Ático" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Ático")))
-(defrule ASOCIACION::recomendar-anciano-servicios ?r<-(Recomendacion(solicitante ?s)(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 70))) (Rasgo(objeto ?v)(caracteristica SERVICIOS)(valor ABASTECIMIENTO)) (test (not (member$ "Servicios a pie" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Servicios a pie")))
+(defrule ASOCIACION::recomendar-familia-educacion ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (test (neq ?st PARCIALMENTE_ADECUADO)) (object (is-a Familia)) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor EDUCATIVO)) (test (not (member$ "Colegios cerca" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Colegios cerca")))
+(defrule ASOCIACION::recomendar-estudiante-fiesta ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (test (neq ?st PARCIALMENTE_ADECUADO)) (object (is-a Estudiantes)) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor RUIDOSO)) (test (not (member$ "Ambiente" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Ambiente")))
+(defrule ASOCIACION::recomendar-estudiante-transporte ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (test (neq ?st PARCIALMENTE_ADECUADO)) (object (is-a Estudiantes)) (Rasgo(objeto ?v)(caracteristica CONECTIVIDAD)(valor RAPIDA)) (test (not (member$ "Conexión Uni" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Conexión Uni")))
+(defrule ASOCIACION::recomendar-anciano-relax ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (test (neq ?st PARCIALMENTE_ADECUADO)) (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 65))) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor RELAX)) (test (not (member$ "Zona tranquila" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Zona tranquila")))
+(defrule ASOCIACION::recomendar-chollo ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (test (neq ?st PARCIALMENTE_ADECUADO)) (Rasgo(objeto ?v)(caracteristica COSTE)(valor CHOLLO)) (test (not (member$ "Gran precio" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Gran precio")))
+(defrule ASOCIACION::recomendar-pareja-atico ?r<-(Recomendacion(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (object (is-a Pareja)) (test (neq ?st PARCIALMENTE_ADECUADO)) (Rasgo(objeto ?v)(caracteristica TIPOLOGIA)(valor ATICO)) (test (not (member$ "Ático" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Ático")))
+(defrule ASOCIACION::recomendar-anciano-servicios ?r<-(Recomendacion(solicitante ?s)(vivienda ?v)(estado ?st)(motivos $?m)) (test (neq ?st DESCARTADO)) (test (neq ?st PARCIALMENTE_ADECUADO)) (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 70))) (Rasgo(objeto ?v)(caracteristica SERVICIOS)(valor ABASTECIMIENTO)) (test (not (member$ "Servicios a pie" $?m))) => (modify ?r (estado MUY_RECOMENDABLE)(motivos $?m "Servicios a pie")))
 
 (defrule ASOCIACION::validar (declare (salience -5)) ?r<-(Recomendacion(estado INDETERMINADO)) => (modify ?r (estado VALID)))
 (defrule ASOCIACION::siguiente (declare (salience -10)) => (focus REFINAMIENTO))
