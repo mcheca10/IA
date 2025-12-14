@@ -83,7 +83,7 @@
         (bind ?adultos (ask-int "2. Num Adultos:"))
         (bind ?menores (ask-int "3. Num Niños:"))
         (bind ?total (+ ?adultos ?menores))
-        (bind ?ed (create$)) (while (neq (length$ ?ed) ?total) do (bind ?ed (ask-list-int "   > Edades de todos (separadas por espacio)")))
+        (bind ?ed (create$)) (while (neq (length$ ?ed) ?total) do (bind ?ed (ask-list-int "   > Edades de todos ")))
 
         (if (> ?menores 0) then
             (printout t ">> Perfil: FAMILIA" crlf)
@@ -163,7 +163,6 @@
     (FaseEntrevista (estado especificas)) 
     ?s <- (object (is-a CoLiving))
     (test (eq (instance-name ?s) [usuario_actual]))
-    (test (eq (send ?s get-bano_privado) nil))
     =>
     (send ?s put-bano_privado (if (yes-or-no-p "C. ¿Baño privado imprescindible?") then SI else NO))
     (send ?s put-habitaciones_individuales (if (yes-or-no-p "C. ¿Necesitais habitaciones individuales todos?") then SI else NO)))
