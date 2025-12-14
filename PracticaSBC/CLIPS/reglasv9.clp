@@ -1,14 +1,14 @@
 ;;; 1. MÓDULOS
 (defmodule MAIN (export ?ALL))
-(defmodule PREGUNTAS (import MAIN ?ALL) (export ?ALL))   
-(defmodule ABSTRACCION (import MAIN ?ALL) (export ?ALL)) 
-(defmodule ASOCIACION (import MAIN ?ALL) (export ?ALL))  
+(defmodule PREGUNTAS (import MAIN ?ALL) (export ?ALL))
+(defmodule ABSTRACCION (import MAIN ?ALL) (export ?ALL))
+(defmodule ASOCIACION (import MAIN ?ALL) (export ?ALL))
 (defmodule REFINAMIENTO (import MAIN ?ALL) (export ?ALL))
-(defmodule INFORME (import MAIN ?ALL) (export ?ALL))     
+(defmodule INFORME (import MAIN ?ALL) (export ?ALL))
 
 ;;; 2. TEMPLATES
 (deftemplate MAIN::Recomendacion
-    (slot solicitante (type INSTANCE-NAME)) 
+    (slot solicitante (type INSTANCE-NAME))
     (slot vivienda (type INSTANCE-NAME))
     (slot estado (type SYMBOL) (default INDETERMINADO))
     (multislot motivos (type STRING))
@@ -17,7 +17,7 @@
 )
 (deftemplate MAIN::Rasgo
     (slot objeto (type INSTANCE-NAME))
-    (slot caracteristica (type SYMBOL)) 
+    (slot caracteristica (type SYMBOL))
     (slot valor (type SYMBOL))
 )
 (deftemplate MAIN::FaseEntrevista (slot estado))
@@ -25,41 +25,41 @@
 
 ;;; 3. FUNCIONES UTILIDAD
 
-(deffunction MAIN::ask-float (?q) 
-   (printout t ?q " ") (bind ?a (read)) 
-   (while (lexemep ?a) do (printout t "Error. Numero: ") (bind ?a (read))) 
+(deffunction MAIN::ask-float (?q)
+   (printout t ?q " ") (bind ?a (read))
+   (while (lexemep ?a) do (printout t "Error. Numero: ") (bind ?a (read)))
    (float ?a))
 
-(deffunction MAIN::ask-int (?q) 
-   (printout t ?q " ") (bind ?a (read)) 
-   (while (lexemep ?a) do (printout t "Error. Entero: ") (bind ?a (read))) 
+(deffunction MAIN::ask-int (?q)
+   (printout t ?q " ") (bind ?a (read))
+   (while (lexemep ?a) do (printout t "Error. Entero: ") (bind ?a (read)))
    (integer ?a))
 
-(deffunction MAIN::ask-choice (?q $?v) 
-   (printout t ?q " [" (implode$ $?v) "]: ") 
-   (bind ?a (read)) 
-   (if (lexemep ?a) then (bind ?a (lowcase ?a))) 
-   (while (not (member$ ?a $?v)) do (printout t "Opcion no valida. " ?q " ") (bind ?a (read))) 
+(deffunction MAIN::ask-choice (?q $?v)
+   (printout t ?q " [" (implode$ $?v) "]: ")
+   (bind ?a (read))
+   (if (lexemep ?a) then (bind ?a (lowcase ?a)))
+   (while (not (member$ ?a $?v)) do (printout t "Opcion no valida. " ?q " ") (bind ?a (read)))
    ?a)
 
-(deffunction MAIN::yes-or-no-p (?q) 
-   (bind ?a (ask-choice ?q yes no y n si s)) 
+(deffunction MAIN::yes-or-no-p (?q)
+   (bind ?a (ask-choice ?q yes no y n si s))
    (if (or (eq ?a yes) (eq ?a y) (eq ?a si) (eq ?a s)) then TRUE else FALSE))
 
-(deffunction MAIN::ask-list-int (?p) 
-   (printout t ?p " (separados por espacios): ") 
-   (bind ?l (readline)) (bind ?c (explode$ ?l)) (bind ?r (create$)) 
-   (progn$ (?e ?c) (if (integerp ?e) then (bind ?r (create$ ?r ?e)))) 
+(deffunction MAIN::ask-list-int (?p)
+   (printout t ?p " (separados por espacios): ")
+   (bind ?l (readline)) (bind ?c (explode$ ?l)) (bind ?r (create$))
+   (progn$ (?e ?c) (if (integerp ?e) then (bind ?r (create$ ?r ?e))))
    ?r)
 
-(deffunction MAIN::distancia (?x1 ?y1 ?x2 ?y2) 
+(deffunction MAIN::distancia (?x1 ?y1 ?x2 ?y2)
    (sqrt (+ (* (- ?x2 ?x1) (- ?x2 ?x1)) (* (- ?y2 ?y1) (- ?y2 ?y1)))))
 
 (defrule MAIN::inicio
     (declare (salience 100))
     =>
     (printout t "===========================================" crlf)
-    (printout t "       SISTEMA EXPERTO INMOBILIARIO        " crlf)
+    (printout t "        SISTEMA EXPERTO INMOBILIARIO       " crlf)
     (printout t "===========================================" crlf)
     (assert (FaseEntrevista (estado router)))
     (focus PREGUNTAS)
@@ -221,21 +221,15 @@
     (test (if (numberp ?p_deseado) then (> ?p_deseado 0) else FALSE)) 
     (not (Rasgo (objeto ?v) (caracteristica COSTE))) 
     =>
-    ;; --- LÓGICA REALISTA ---
-    
-    ;; 1. IMPAGABLE (> 20% extra)
     (if (> ?p_real (* ?p_deseado 1.20)) then 
         (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor IMPAGABLE)))
     else 
-        ;; 2. CARO (Entre +10% y +20%)
         (if (> ?p_real (* ?p_deseado 1.10)) then 
             (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor CARO)))
         else 
-            ;; 3. SOSPECHOSO (< 30% más barato) -> ¡Ojo aquí!
             (if (< ?p_real (* ?p_deseado 0.70)) then
                 (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor DEMASIADO_BARATO)))
             else
-                ;; 4. CHOLLO (Entre -10% y -30%)
                 (if (< ?p_real (* ?p_deseado 0.90)) then 
                     (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor CHOLLO)))
                 )
@@ -251,15 +245,12 @@
     (test (> ?sd 0))
     (not (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ))) 
     =>
-    ;; 1. INSUFICIENTE (Si falta más del 20% del espacio)
     (if (< ?sup (* ?sd 0.80)) then 
         (assert (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor INSUFICIENTE)))
     else 
-        ;; 2. JUSTO (Si falta entre 10% y 20%)
         (if (< ?sup (* ?sd 0.90)) then 
             (assert (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor JUSTO)))
         else 
-            ;; 3. EXTRA (Si sobra más del 10%)
             (if (> ?sup (* ?sd 1.10)) then 
                 (assert (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor EXTRA)))
             )
@@ -328,15 +319,12 @@
     (object (is-a Vivienda) (name ?v) (es_soleado ?sol))
     (not (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD)))
     =>
-    ;; 1. Si es "Nada" -> OSCURO
     (if (eq ?sol "Nada") then
         (assert (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor OSCURO)))
     else 
-        ;; 2. Si es "Todo el dia" o "Mucho" -> MUY_LUMINOSO
         (if (or (eq ?sol "Todo el dia") (eq ?sol "Mucho")) then
             (assert (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor MUY_LUMINOSO)))
         else
-            ;; 3. Resto de casos ("Algo", "Mañana", etc.) -> NORMAL
             (assert (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor NORMAL)))
         )
     )
@@ -351,7 +339,6 @@
     (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s)) 
     (exists (object (is-a Transporte) (name ?t)) 
         (test (member$ ?t ?s))
-        ;; Comprobamos si es Metro, Tren o Autobús
         (test (or (eq (class ?t) Parada_Metro) 
                   (eq (class ?t) Estación_Tren)
                   (eq (class ?t) Parada_Autobús)))
@@ -368,7 +355,7 @@
 
 
 ;;; =========================================================
-;;; MÓDULO ASOCIACION (OPTIMIZADO V5)
+;;; MÓDULO ASOCIACION 
 ;;; =========================================================
 
 (defrule ASOCIACION::init-recom 
@@ -387,14 +374,12 @@
 
 (defrule ASOCIACION::filtrar-precio-sospechoso
     ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
-    (test (> ?p -150)) ;; Solo si sigue viva
+    (test (> ?p -150))
     
-    ;; Detectamos la etiqueta generada anteriormente
     (Rasgo (objeto ?v) (caracteristica COSTE) (valor DEMASIADO_BARATO))
     
     (test (not (member$ "Precio sospechosamente bajo" $?m)))
     =>
-    ;; Descarte (-150 puntos)
     (modify ?r (puntuacion (- ?p 150)) (motivos $?m "Precio sospechosamente bajo"))
 )
 
@@ -402,7 +387,6 @@
     ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
     (test (> ?p -150))
     
-    ;; Detectamos el rasgo generado por el porcentaje (< 85%)
     (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor INSUFICIENTE))
     
     (test (not (member$ "Superficie insuficiente (>15% dif)" $?m)))
@@ -429,19 +413,15 @@
 
 (defrule ASOCIACION::filtrar-coliving-bano-privado
     ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
-    (test (> ?p -150)) ;; Solo evaluamos si sigue viva
+    (test (> ?p -150)) 
     
-    ;; 1. Es CoLiving y exige baño privado
     (object (is-a CoLiving) (num_personas ?np) (bano_privado SI))
     
-    ;; 2. La vivienda no tiene suficientes baños (1 por persona)
     (object (is-a Vivienda) (name ?v) (num_banos ?nb))
     (test (< ?nb ?np))
     
-    ;; 3. Evitar duplicados
     (test (not (member$ "Faltan baños privados (CoLiving)" $?m)))
     =>
-    ;; Descarte (-150)
     (modify ?r (puntuacion (- ?p 150)) (motivos $?m "Faltan baños privados (CoLiving)"))
 )
 
@@ -450,7 +430,6 @@
     (test (> ?p -150))
     (object (is-a Solicitante) (tiene_mascota SI)) 
     
-    ;; Leemos el nuevo rasgo
     (Rasgo (objeto ?v) (caracteristica MASCOTAS) (valor PROHIBIDAS)) 
     
     (test (not (member$ "No admiten mascotas" $?m)))
@@ -517,8 +496,6 @@
     
     (test (> ?sd 0))
     
-    ;; LÓGICA: Es menor que lo deseado, PERO entra en el margen de 15m
-    ;; Ejemplo: Pides 80m. La casa tiene 70m.
     (test (< ?sup ?sd))
     (test (>= ?sup (- ?sd 15)))
     
@@ -563,20 +540,16 @@
 
 (defrule ASOCIACION::aviso-pareja-mala-eficiencia
     ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
-    (test (> ?p -150)) ;; Solo si la vivienda sigue viva
+    (test (> ?p -150))
     
-    ;; 1. Es Pareja y busca Eficiencia (lo guardamos antes en la entrevista)
     (object (is-a Pareja) (prefiere_cerca $?pc))
     (test (member$ "Eficiencia" $?pc))
     
-    ;; 2. La vivienda tiene mala eficiencia (F o G)
     (object (is-a Vivienda) (name ?v) (certificado_energetico ?ce))
     (test (or (eq ?ce F) (eq ?ce G)))
     
-    ;; 3. Evitar duplicados
     (test (not (member$ "Gasto energético alto (Mal certificado)" $?m)))
     =>
-    ;; Penalización de 50 puntos
     (modify ?r (puntuacion (- ?p 50)) (motivos $?m "Gasto energético alto (Mal certificado)"))
 )
 
@@ -597,20 +570,16 @@
 
 (defrule ASOCIACION::aviso-coche-sin-parking
     ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
-    (test (> ?p -150)) ;; Solo si la vivienda sigue viva
+    (test (> ?p -150)) 
     
-    ;; 1. El solicitante tiene coche
     (object (is-a Solicitante) (tiene_coche ?tc))
     (test (or (eq ?tc TRUE) (eq ?tc SI)))
     
-    ;; 2. La vivienda NO tiene parking
     (object (is-a Vivienda) (name ?v) (tiene_parking ?tp))
     (test (or (eq ?tp NO) (eq ?tp FALSE)))
     
-    ;; 3. Evitar duplicados
     (test (not (member$ "Sin Parking con coche propio" $?m)))
     =>
-    ;; Restamos 50 puntos
     (modify ?r (puntuacion (- ?p 50)) (motivos $?m "Sin Parking con coche propio"))
 )
 
@@ -640,7 +609,7 @@
 
 
 ;;; =========================================================
-;;; MÓDULO REFINAMIENTO (PUNTUACION FINA Y CLASIFICACION)
+;;; MÓDULO REFINAMIENTO 
 ;;; =========================================================
 
 
@@ -663,7 +632,6 @@
     ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
     (test (> ?p -150))
     
-    ;; Detectamos el rasgo "Extra" (> 105%)
     (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor EXTRA))
     
     (test (not (member$ "Espacio extra (>5%)" $?m)))
@@ -741,7 +709,6 @@
     ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
     (test (> ?p -150))
     
-    ;; Detectamos la nueva etiqueta
     (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor MUY_LUMINOSO))
     
     (test (not (member$ "Muy Luminoso (Sol todo el día)" $?m)))
