@@ -125,9 +125,15 @@
     else 
         (send ?s put-necesita_muebles (ask-choice "9. ¿Necesitas muebles?" (create$ si no indiferente))))
 
-    (printout t "10. Ubicacion Trabajo/Interes (X Y):" crlf)
-    (send ?s put-trabaja_en_x (ask-float "    X: "))
-    (send ?s put-trabaja_en_y (ask-float "    Y: "))
+    
+    (bind ?sit (send ?s get-situacion_laboral))
+    
+    (if (and (or (eq ?sit estudiante) (eq ?sit trabajador)) 
+             (eq ?t FALSE)) then
+        (printout t "10. Ubicacion Trabajo/Interes (X Y):" crlf)
+        (send ?s put-trabaja_en_x (ask-float "    X: "))
+        (send ?s put-trabaja_en_y (ask-float "    Y: "))
+    )
     
     (bind ?tr (ask-choice "11. Transporte principal:" (create$ publico coche moto andando bici)))
     (send ?s put-medio_transporte_principal ?tr)
@@ -438,6 +444,18 @@
     (test (not (member$ "Faltan habitaciones separadas" $?m)))
     => (modify ?r (puntuacion (- ?p 150)) (motivos $?m "Faltan habitaciones separadas")))
 
+(defrule ASOCIACION::filtrar-sin-transporte-publico
+    ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
+    (test (> ?p -150))
+    (object (is-a Solicitante) (medio_transporte_principal publico))
+    (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?servicios))
+    (not (exists (object (is-a Transporte) (name ?t)) 
+                 (test (member$ ?t $?servicios))))
+    (test (not (member$ "Sin transporte público cercano" $?m)))
+    =>
+    (modify ?r (puntuacion (- ?p 150)) (motivos $?m "Sin transporte público cercano"))
+)
+
 ;;; B. AVISOS -> RESTAN 50 PUNTOS
 ;;; También comprobamos puntuación para no gastar tiempo en casas ya descartadas
 
@@ -505,59 +523,26 @@
     (test (not (member$ "Seguridad Bajos" $?m))) 
     => (modify ?r (puntuacion (- ?p 50))(motivos $?m "Seguridad Bajos")))
 
-;;; C. RECOMENDACIONES -> SUMAN 10 PUNTOS
-;;; Solo recomendamos si la vivienda sigue viva (> -150)
-
-(defrule ASOCIACION::recomendar-familia-educacion 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
+(defrule ASOCIACION::aviso-sin-ascensor
+    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
     (test (> ?p -150))
-    (object (is-a Familia)) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor EDUCATIVO)) 
-    (test (not (member$ "Colegios cerca" $?m))) 
-    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Colegios cerca")))
+    (object (is-a Vivienda) (name ?v) (tiene_ascensor ?a) (altura_piso ?h))
+    (test (> ?h 2))
+    (test (or (eq ?a NO) (eq ?a FALSE)))
+    (test (not (member$ "Sin Ascensor y piso alto" $?m)))
+    =>
+    (modify ?r (puntuacion (- ?p 50)) (motivos $?m "Sin Ascensor y piso alto"))
+)
 
-(defrule ASOCIACION::recomendar-estudiante-fiesta 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
-    (test (> ?p -150))
-    (object (is-a Estudiantes)) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor RUIDOSO)) 
-    (test (not (member$ "Ambiente" $?m))) 
-    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Ambiente")))
-
-(defrule ASOCIACION::recomendar-estudiante-transporte 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
-    (test (> ?p -150))
-    (object (is-a Estudiantes)) (Rasgo(objeto ?v)(caracteristica CONECTIVIDAD)(valor RAPIDA)) 
-    (test (not (member$ "Conexión Uni" $?m))) 
-    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Conexión Uni")))
-
-(defrule ASOCIACION::recomendar-anciano-relax 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
-    (test (> ?p -150))
-    (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 65))) 
-    (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor RELAX)) 
-    (test (not (member$ "Zona tranquila" $?m))) 
-    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Zona tranquila")))
-
-(defrule ASOCIACION::recomendar-chollo 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
-    (test (> ?p -150))
-    (Rasgo(objeto ?v)(caracteristica COSTE)(valor CHOLLO)) 
-    (test (not (member$ "Gran precio" $?m))) 
-    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Gran precio")))
-
-(defrule ASOCIACION::recomendar-pareja-atico 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
-    (test (> ?p -150))
-    (object (is-a Pareja)) (Rasgo(objeto ?v)(caracteristica TIPOLOGIA)(valor ATICO)) 
-    (test (not (member$ "Ático" $?m))) 
-    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Ático")))
-
-(defrule ASOCIACION::recomendar-anciano-servicios 
-    ?r<-(Recomendacion(solicitante ?s)(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
-    (test (> ?p -150))
-    (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 70))) 
-    (Rasgo(objeto ?v)(caracteristica SERVICIOS)(valor ABASTECIMIENTO)) 
-    (test (not (member$ "Servicios a pie" $?m))) 
-    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Servicios a pie")))
+(defrule ASOCIACION::aviso-anciano-sin-super
+    ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
+    (test (> ?p -150)) 
+    (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 70)))
+    (not (Rasgo (objeto ?v) (caracteristica SERVICIOS) (valor ABASTECIMIENTO)))
+    (test (not (member$ "Lejos de supermercados" $?m)))
+    =>
+    (modify ?r (puntuacion (- ?p 50)) (motivos $?m "Lejos de supermercados"))
+)
 
 (defrule ASOCIACION::siguiente (declare (salience -10)) => (focus REFINAMIENTO))
 
@@ -565,13 +550,13 @@
 ;;; MÓDULO REFINAMIENTO (PUNTUACION FINA Y CLASIFICACION)
 ;;; =========================================================
 
-;;; 1. BONUS DISTANCIA REAL
+
 (defrule REFINAMIENTO::bonus-distancia 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
     (test (> ?p -150))
     (object (is-a Solicitante) (trabaja_en_x ?tx) (trabaja_en_y ?ty)) 
     (object (is-a Vivienda) (name ?v) (coordx ?vx) (coordy ?vy)) 
-    (test (neq ?tx nil)) 
+    (test (or (neq ?tx 0.0) (neq ?ty 0.0))) 
     (test (not (or (member$ "Muy cerca" $?m) (member$ "Distancia media" $?m))))
     => 
     (bind ?d (distancia ?tx ?ty ?vx ?vy)) 
@@ -581,8 +566,6 @@
         (if (< ?d 3000) then 
             (modify ?r (puntuacion (+ ?p 5)) (motivos $?m "Distancia media")))))
 
-
-;;; 3. BONUS AMENITIES
 (defrule REFINAMIENTO::bonus-aire 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
     (test (> ?p -150)) 
@@ -619,20 +602,6 @@
     (test (<= ?np (* ?nb 2))) (test (not (member$ "Ratio Baños" $?m))) 
     => (modify ?r (puntuacion (+ ?p 10)) (motivos $?m "Ratio Baños")))
 
-;;; 4. PENALIZACIONES
-(defrule REFINAMIENTO::pen-ascensor 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
-    (test (> ?p -150)) 
-    (object (is-a Vivienda) (name ?v) (tiene_ascensor FALSE) (altura_piso ?h&:(> ?h 1))) 
-    (test (not (member$ "Sin Ascensor" $?m))) 
-    => (modify ?r (puntuacion (- ?p 10)) (motivos $?m "Sin Ascensor y piso alto")))
-
-(defrule REFINAMIENTO::pen-conectividad 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
-    (test (> ?p -150))
-    (Rasgo(objeto ?v)(caracteristica CONECTIVIDAD)(valor LENTA)) 
-    (test (not (member$ "Mala Conectividad" $?m))) 
-    => (modify ?r (puntuacion (- ?p 10)) (motivos $?m "Mala Conectividad")))
 
 (defrule REFINAMIENTO::pen-oscuro 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
@@ -656,14 +625,51 @@
     (test (not (member$ "Eficiencia" $?m))) 
     => (modify ?r (puntuacion (+ ?p 10)) (motivos $?m "Eficiencia")))
 
-(defrule REFINAMIENTO::pen-portal 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
-    (test (> ?p -150))
-    (object (is-a Vivienda) (name ?v) (tiene_ascensor ?a) (acceso_portal ESCALONES)) 
-    (test (or (eq ?a SI) (eq ?a TRUE))) (test (not (member$ "Escalones" $?m))) 
-    => (modify ?r (puntuacion (- ?p 10)) (motivos $?m "Escalones")))
 
-;;; 5. CLASIFICACIÓN FINAL POR PUNTOS (Reglas con muy baja prioridad)
+(defrule REFINAMIENTO::recomendar-familia-educacion 
+    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
+    (test (> ?p -150))
+    (object (is-a Familia)) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor EDUCATIVO)) 
+    (test (not (member$ "Colegios cerca" $?m))) 
+    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Colegios cerca")))
+
+(defrule REFINAMIENTO::recomendar-estudiante-fiesta 
+    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
+    (test (> ?p -150))
+    (object (is-a Estudiantes)) (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor RUIDOSO)) 
+    (test (not (member$ "Ambiente" $?m))) 
+    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Ambiente")))
+
+(defrule REFINAMIENTO::recomendar-estudiante-transporte 
+    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
+    (test (> ?p -150))
+    (object (is-a Estudiantes)) (Rasgo(objeto ?v)(caracteristica CONECTIVIDAD)(valor RAPIDA)) 
+    (test (not (member$ "Conexión Uni" $?m))) 
+    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Conexión Uni")))
+
+(defrule REFINAMIENTO::recomendar-anciano-relax 
+    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
+    (test (> ?p -150))
+    (object (is-a Solicitante) (edad_mas_anciano ?e&:(> ?e 65))) 
+    (Rasgo(objeto ?v)(caracteristica ENTORNO)(valor RELAX)) 
+    (test (not (member$ "Zona tranquila" $?m))) 
+    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Zona tranquila")))
+
+(defrule REFINAMIENTO::recomendar-chollo 
+    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
+    (test (> ?p -150))
+    (Rasgo(objeto ?v)(caracteristica COSTE)(valor CHOLLO)) 
+    (test (not (member$ "Gran precio" $?m))) 
+    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Gran precio")))
+
+(defrule REFINAMIENTO::recomendar-pareja-atico 
+    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
+    (test (> ?p -150))
+    (object (is-a Pareja)) (Rasgo(objeto ?v)(caracteristica TIPOLOGIA)(valor ATICO)) 
+    (test (not (member$ "Ático" $?m))) 
+    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Ático")))
+
+;;; 5. CLASIFICACIÓN FINAL POR PUNTOS 
 
 (defrule REFINAMIENTO::clasificar-descartado
     (declare (salience -100))
