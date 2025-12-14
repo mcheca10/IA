@@ -22,25 +22,20 @@
     (slot trabaja_en_x (type FLOAT) (create-accessor read-write))
     (slot trabaja_en_y (type FLOAT) (create-accessor read-write))
     (slot medio_transporte_principal (type SYMBOL) (create-accessor read-write))
-    (slot presupuesto_maximo (type FLOAT) (create-accessor read-write))
     (slot edad_mas_anciano (type INTEGER) (create-accessor read-write))
     (slot trabaja_en_casa (type SYMBOL) (allowed-values SI NO TRUE FALSE) (create-accessor read-write)) 
     (slot tiene_coche (type SYMBOL) (create-accessor read-write))
     (multislot prefiere_cerca (type SYMBOL) (create-accessor read-write))
-    (slot techo_maximo_seguro (type FLOAT) (create-accessor read-write))
     (slot exigencia_termica (type SYMBOL) (allowed-values NORMAL CRITICA) (create-accessor read-write))
 )
 
 ;;; SUBCLASES SOLICITANTE
 (defclass Familia (is-a Solicitante) (role concrete) (pattern-match reactive)
-    (slot num_hijos (type INTEGER) (create-accessor read-write))
-    (slot nombre_colegio_asignado (type STRING) (create-accessor read-write)))
+    (slot num_hijos (type INTEGER) (create-accessor read-write)))
 
-(defclass Estudiantes (is-a Solicitante) (role concrete) (pattern-match reactive)
-    (slot necesita_fiesta (type SYMBOL) (allowed-values SI NO) (create-accessor read-write)))
+(defclass Estudiantes (is-a Solicitante) (role concrete) (pattern-match reactive))
 
-(defclass Pareja (is-a Solicitante) (role concrete) (pattern-match reactive)
-    (slot plan_familia_corto_plazo (type SYMBOL) (create-accessor read-write)))
+(defclass Pareja (is-a Solicitante) (role concrete) (pattern-match reactive))
 
 (defclass CoLiving (is-a Solicitante) (role concrete) (pattern-match reactive)
     (slot bano_privado (type SYMBOL) (allowed-values SI NO) (create-accessor read-write))
@@ -85,12 +80,8 @@
 (defclass Dúplex (is-a Bloque) (role concrete) (pattern-match reactive))
 (defclass Piso (is-a Bloque) (role concrete) (pattern-match reactive))
 (defclass Estudio (is-a Bloque) (role concrete) (pattern-match reactive))
-(defclass Atico (is-a Piso) (role concrete) (pattern-match reactive))
-(defclass Bajo (is-a Piso) (role concrete) (pattern-match reactive)
-    (slot tiene_rejas (type SYMBOL) (allowed-values SI NO) (create-accessor read-write)))
-(defclass Intermedio (is-a Piso) (role concrete) (pattern-match reactive))
-
-(defclass Unifamiliar (is-a Vivienda) (role concrete) (pattern-match reactive))
+(defclass Unifamiliar (is-a Vivienda) (role concrete) (pattern-match reactive)
+    (slot tamano_jardin (type FLOAT) (default 0.0) (create-accessor read-write)))
 
 ;;; CLASES SERVICIOS
 (defclass Servicio (is-a USER) (role concrete) (pattern-match reactive)

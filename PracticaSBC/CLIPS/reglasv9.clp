@@ -24,6 +24,7 @@
 (deftemplate MAIN::PasarFaseEspecifica)
 
 ;;; 3. FUNCIONES UTILIDAD
+
 (deffunction MAIN::ask-float (?q) 
    (printout t ?q " ") (bind ?a (read)) 
    (while (lexemep ?a) do (printout t "Error. Numero: ") (bind ?a (read))) 
@@ -58,7 +59,7 @@
     (declare (salience 100))
     =>
     (printout t "===========================================" crlf)
-    (printout t "   SISTEMA EXPERTO INMOBILIARIO (V5)       " crlf)
+    (printout t "       SISTEMA EXPERTO INMOBILIARIO        " crlf)
     (printout t "===========================================" crlf)
     (assert (FaseEntrevista (estado router)))
     (focus PREGUNTAS)
@@ -107,9 +108,9 @@
     =>
     (printout t "--- FASE 2: DATOS GENERALES ---" crlf)
     
-    (send ?s put-presupuesto_esperado (ask-float "5. Alquiler maximo deseado (€):"))
+    (send ?s put-presupuesto_esperado (ask-float "5. Alquiler deseado (€):"))
     
-    (send ?s put-superficie_deseada (ask-float "6. Superficie minima deseada (m2):"))
+    (send ?s put-superficie_deseada (ask-float "6. Superficie deseada (m2):"))
 
     (bind ?m (yes-or-no-p "7. ¿Teneis mascota?"))
     (send ?s put-tiene_mascota (if ?m then SI else NO))
@@ -127,12 +128,12 @@
     
     (if (and (or (eq ?sit estudiante) (eq ?sit trabajador)) 
              (eq ?t FALSE)) then
-        (printout t "10. Ubicacion Trabajo/Interes (X Y):" crlf)
+        (printout t "10. Ubicacion Trabajo/Universidad (X Y):" crlf)
         (send ?s put-trabaja_en_x (ask-float "    X: "))
         (send ?s put-trabaja_en_y (ask-float "    Y: "))
     )
     
-    (bind ?tr (ask-choice "11. Transporte principal:" (create$ publico coche moto andando bici)))
+    (bind ?tr (ask-choice "11. Transporte principal:" (create$ publico coche)))
     (send ?s put-medio_transporte_principal ?tr)
     (if (or (eq ?tr coche) (yes-or-no-p "    ¿Tienes coche?")) then 
         (send ?s put-tiene_coche TRUE)
@@ -142,7 +143,6 @@
     (bind ?mr (yes-or-no-p "12. ¿Movilidad reducida (o silla bebe)?"))
     (send ?s put-movilidad_reducida (if ?mr then SI else NO))
 
-    ;; Calc Edad Anciano Legacy
     (bind ?eds (send ?s get-edades_inquilinos))
     (bind ?mx 0) 
     (progn$ (?e ?eds) (if (> ?e ?mx) then (bind ?mx ?e)))
@@ -158,23 +158,6 @@
     (retract ?t) 
     (modify ?f (estado especificas)))
 
-(defrule PREGUNTAS::Esp-Familia 
-    (FaseEntrevista (estado especificas)) 
-    ?s <- (object (is-a Familia))
-    (test (eq (instance-name ?s) [usuario_actual]))
-    (test (or (eq (send ?s get-nombre_colegio_asignado) nil) (eq (send ?s get-nombre_colegio_asignado) "")))
-    =>
-    (if (yes-or-no-p "F. ¿Teneis colegio asignado en la zona?") then 
-        (send ?s put-nombre_colegio_asignado "SI") (slot-insert$ ?s prefiere_cerca 1 Colegio) 
-    else (send ?s put-nombre_colegio_asignado "NO")))
-
-(defrule PREGUNTAS::Esp-Estudiante 
-    (FaseEntrevista (estado especificas)) 
-    ?s <- (object (is-a Estudiantes))
-    (test (eq (instance-name ?s) [usuario_actual]))
-    (test (eq (send ?s get-necesita_fiesta) nil))
-    =>
-    (send ?s put-necesita_fiesta (if (yes-or-no-p "E. ¿Buscas zona de ambiente?") then SI else NO)))
 
 (defrule PREGUNTAS::Esp-CoLiving 
     (FaseEntrevista (estado especificas)) 
@@ -189,9 +172,11 @@
     (FaseEntrevista (estado especificas)) 
     ?s <- (object (is-a Pareja))
     (test (eq (instance-name ?s) [usuario_actual]))
-    (test (eq (send ?s get-plan_familia_corto_plazo) nil))
+    (test (not (member$ "Eficiencia" (send ?s get-prefiere_cerca))))
     =>
-    (send ?s put-plan_familia_corto_plazo (if (yes-or-no-p "P. ¿Planeais hijos a corto plazo?") then SI else NO)))
+    (bind ?resp (yes-or-no-p "P. ¿Valoráis mucho la eficiencia energética (ahorro en facturas)?"))
+    (if ?resp then 
+        (slot-insert$ ?s prefiere_cerca 1 "Eficiencia")))
 
 
 (defrule PREGUNTAS::Finalizar 
@@ -217,20 +202,6 @@
     (slot-insert$ ?v tiene_servicio_cercano 1 ?s)
 )
 
-(defrule ABSTRACCION::Calculo-Financiero
-    (declare (salience 20))
-    ?s <- (object (is-a Solicitante) 
-                  (presupuesto_esperado ?p)
-                  (techo_maximo_seguro ?t))
-    
-    (test (if (numberp ?t) then (<= ?t 0) else TRUE))
-    =>
-    ;; CAMBIO V5: Asignación directa sin calcular ratios de ingresos
-    (send ?s put-techo_maximo_seguro ?p)
-    (send ?s put-presupuesto_maximo ?p)
-    (printout t "   [INFO] Presupuesto fijado en: " ?p " EUR" crlf)
-)
-
 (defrule ABSTRACCION::Calculo-Termico
     (declare (salience 20))
     ?s <- (object (is-a Solicitante) (edades_inquilinos $?e) (exigencia_termica ?x&:(eq ?x nil)))
@@ -244,19 +215,53 @@
 ;;; --- GENERACIÓN DE RASGOS ---
 
 (defrule ABSTRACCION::Gen-Rasgo-Coste
-    (object (is-a Solicitante) (techo_maximo_seguro ?max))
-    (object (is-a Vivienda) (name ?v) (precio_mensual ?p)) 
-    (test (if (numberp ?max) then (> ?max 0) else FALSE)) 
+    (object (is-a Solicitante) (presupuesto_esperado ?p_deseado))
+    (object (is-a Vivienda) (name ?v) (precio_mensual ?p_real)) 
+    
+    (test (if (numberp ?p_deseado) then (> ?p_deseado 0) else FALSE)) 
     (not (Rasgo (objeto ?v) (caracteristica COSTE))) 
     =>
-    (if (> ?p (+ ?max 200)) then 
+    ;; --- LÓGICA REALISTA ---
+    
+    ;; 1. IMPAGABLE (> 20% extra)
+    (if (> ?p_real (* ?p_deseado 1.20)) then 
         (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor IMPAGABLE)))
     else 
-        (if (> ?p ?max) then 
+        ;; 2. CARO (Entre +10% y +20%)
+        (if (> ?p_real (* ?p_deseado 1.10)) then 
             (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor CARO)))
         else 
-            (if (<= ?p (- ?max 200)) then 
-                (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor CHOLLO)))
+            ;; 3. SOSPECHOSO (< 30% más barato) -> ¡Ojo aquí!
+            (if (< ?p_real (* ?p_deseado 0.70)) then
+                (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor DEMASIADO_BARATO)))
+            else
+                ;; 4. CHOLLO (Entre -10% y -30%)
+                (if (< ?p_real (* ?p_deseado 0.90)) then 
+                    (assert (Rasgo (objeto ?v) (caracteristica COSTE) (valor CHOLLO)))
+                )
+            )
+        )
+    )
+)
+
+(defrule ABSTRACCION::Gen-Rasgo-Superficie
+    (object (is-a Solicitante) (superficie_deseada ?sd))
+    (object (is-a Vivienda) (name ?v) (superficie ?sup))
+    
+    (test (> ?sd 0))
+    (not (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ))) 
+    =>
+    ;; 1. INSUFICIENTE (Si falta más del 20% del espacio)
+    (if (< ?sup (* ?sd 0.80)) then 
+        (assert (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor INSUFICIENTE)))
+    else 
+        ;; 2. JUSTO (Si falta entre 10% y 20%)
+        (if (< ?sup (* ?sd 0.90)) then 
+            (assert (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor JUSTO)))
+        else 
+            ;; 3. EXTRA (Si sobra más del 10%)
+            (if (> ?sup (* ?sd 1.10)) then 
+                (assert (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor EXTRA)))
             )
         )
     )
@@ -282,42 +287,78 @@
         (assert (Rasgo (objeto ?v) (caracteristica CONFORT) (valor ALTO)))))
 )
 
-;;; REGLAS LEGACY (Abstracción)
-(defrule ABSTRACCION::abs-espacio-hacinado 
+(defrule ABSTRACCION::abs-espacio-dormitorios 
     (object (is-a Solicitante) (num_personas ?np)) 
     (object (is-a Vivienda) (name ?v) (num_habs_dobles ?d) (num_habs_individual ?i))
     (test (> ?np (+ (* ?d 2) ?i)))
     (not (Rasgo (objeto ?v) (caracteristica ESPACIO)))
     => (assert (Rasgo (objeto ?v) (caracteristica ESPACIO) (valor INSUFICIENTE))))
 
-(defrule ABSTRACCION::abs-mascotas 
-    (object (is-a Vivienda) (name ?v) (permite_mascotas ?m))
-    (test (or (eq ?m NO) (eq ?m FALSE)))
-    (not (Rasgo (objeto ?v) (caracteristica POLITICA))) 
-    => (assert (Rasgo (objeto ?v) (caracteristica POLITICA) (valor NO_MASCOTAS))))
+(defrule ABSTRACCION::abs-mascotas-check
+    (object (is-a Vivienda) (name ?v) 
+            (permite_mascotas ?m) 
+            (tiene_terraza ?t) 
+            (tiene_servicio_cercano $?servicios))
+            
+    (not (Rasgo (objeto ?v) (caracteristica MASCOTAS))) 
+    =>
+    (if (or (eq ?m NO) (eq ?m FALSE)) then
+        (assert (Rasgo (objeto ?v) (caracteristica MASCOTAS) (valor PROHIBIDAS)))
+    else
+        
+        (bind ?tiene_espacio FALSE)
+        (if (or (eq ?t SI) (eq ?t TRUE)) then (bind ?tiene_espacio TRUE))
+        (if (eq (class ?v) Unifamiliar) then
+            (if (> (send ?v get-tamano_jardin) 10) then (bind ?tiene_espacio TRUE))
+        )
+        (bind ?tiene_parque FALSE)
+        (progn$ (?s $?servicios)
+            (if (or (eq (class ?s) Parque) (eq (class ?s) Zona_Verde)) then 
+                (bind ?tiene_parque TRUE)
+            )
+        )
+        
+        (if (and (eq ?tiene_espacio FALSE) (eq ?tiene_parque FALSE)) then
+            (assert (Rasgo (objeto ?v) (caracteristica MASCOTAS) (valor REGULAR)))
+        )
+    )
+)
 
-(defrule ABSTRACCION::abs-luz-pobre 
-    (object (is-a Vivienda) (name ?v) (es_soleado "Nada"))
+(defrule ABSTRACCION::Gen-Rasgo-Luminosidad
+    (object (is-a Vivienda) (name ?v) (es_soleado ?sol))
     (not (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD)))
-    => (assert (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor OSCURO))))
+    =>
+    ;; 1. Si es "Nada" -> OSCURO
+    (if (eq ?sol "Nada") then
+        (assert (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor OSCURO)))
+    else 
+        ;; 2. Si es "Todo el dia" o "Mucho" -> MUY_LUMINOSO
+        (if (or (eq ?sol "Todo el dia") (eq ?sol "Mucho")) then
+            (assert (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor MUY_LUMINOSO)))
+        else
+            ;; 3. Resto de casos ("Algo", "Mañana", etc.) -> NORMAL
+            (assert (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor NORMAL)))
+        )
+    )
+)
 
 (defrule ABSTRACCION::abs-servicios-educacion (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s)) (exists (object (is-a Educacion) (name ?e)) (test (member$ ?e ?s))) (not (Rasgo (objeto ?v) (caracteristica ENTORNO) (valor EDUCATIVO))) => (assert (Rasgo (objeto ?v) (caracteristica ENTORNO) (valor EDUCATIVO))))
 (defrule ABSTRACCION::abs-servicios-ocio (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s)) (exists (object (is-a Zona_Nocturna) (name ?zn)) (test (member$ ?zn ?s))) (not (Rasgo (objeto ?v) (caracteristica ENTORNO) (valor RUIDOSO))) => (assert (Rasgo (objeto ?v) (caracteristica ENTORNO) (valor RUIDOSO))))
 (defrule ABSTRACCION::abs-servicios-relax (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s)) (exists (object (is-a Zona_Verde) (name ?zv)) (test (member$ ?zv ?s))) (not (Rasgo (objeto ?v) (caracteristica ENTORNO) (valor RELAX))) => (assert (Rasgo (objeto ?v) (caracteristica ENTORNO) (valor RELAX))))
 (defrule ABSTRACCION::abs-zona-comercial (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s)) (exists (object (is-a Supermercado) (name ?sup)) (test (member$ ?sup ?s))) (not (Rasgo (objeto ?v) (caracteristica SERVICIOS) (valor ABASTECIMIENTO))) => (assert (Rasgo (objeto ?v) (caracteristica SERVICIOS) (valor ABASTECIMIENTO))))
-(defrule ABSTRACCION::abs-transporte-metro (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s)) (exists (object (is-a Parada_Metro) (name ?m)) (test (member$ ?m ?s))) (not (Rasgo (objeto ?v) (caracteristica CONECTIVIDAD) (valor RAPIDA))) => (assert (Rasgo (objeto ?v) (caracteristica CONECTIVIDAD) (valor RAPIDA))))
-(defrule ABSTRACCION::abs-transporte-solo-bus (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s)) (exists (object (is-a Parada_Autobús) (name ?b)) (test (member$ ?b ?s))) (not (exists (object (is-a Parada_Metro) (name ?m)) (test (member$ ?m ?s)))) (not (Rasgo (objeto ?v) (caracteristica CONECTIVIDAD) (valor LENTA))) => (assert (Rasgo (objeto ?v) (caracteristica CONECTIVIDAD) (valor LENTA))))
 
-(defrule ABSTRACCION::abs-piso-bajo 
-    (object (is-a Vivienda) (name ?v) (altura_piso 0)) 
-    (not (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor BAJOS)))
-    => (assert (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor BAJOS))))
+(defrule ABSTRACCION::abs-transporte-rapido
+    (object (is-a Vivienda) (name ?v) (tiene_servicio_cercano $?s)) 
+    (exists (object (is-a Transporte) (name ?t)) 
+        (test (member$ ?t ?s))
+        ;; Comprobamos si es Metro, Tren o Autobús
+        (test (or (eq (class ?t) Parada_Metro) 
+                  (eq (class ?t) Estación_Tren)
+                  (eq (class ?t) Parada_Autobús)))
+    )
+    (not (Rasgo (objeto ?v) (caracteristica CONECTIVIDAD) (valor RAPIDA))) 
+    => (assert (Rasgo (objeto ?v) (caracteristica CONECTIVIDAD) (valor RAPIDA))))
 
-(defrule ABSTRACCION::abs-piso-atico 
-    (object (is-a Vivienda) (name ?v) (tiene_terraza ?t) (altura_piso ?h)) 
-    (test (and (or (eq ?t TRUE) (eq ?t SI)) (> ?h 5)))
-    (not (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor ATICO)))
-    => (assert (Rasgo (objeto ?v) (caracteristica TIPOLOGIA) (valor ATICO))))
 
 (defrule ABSTRACCION::siguiente 
     (declare (salience -10)) 
@@ -344,23 +385,29 @@
     (test (not (member$ "Presupuesto insuficiente" $?m)))
     => (modify ?r (puntuacion (- ?p 150))(motivos $?m "Presupuesto insuficiente")))
 
-(defrule ASOCIACION::filtrar-superficie-muy-insuficiente
+(defrule ASOCIACION::filtrar-precio-sospechoso
+    ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
+    (test (> ?p -150)) ;; Solo si sigue viva
+    
+    ;; Detectamos la etiqueta generada anteriormente
+    (Rasgo (objeto ?v) (caracteristica COSTE) (valor DEMASIADO_BARATO))
+    
+    (test (not (member$ "Precio sospechosamente bajo" $?m)))
+    =>
+    ;; Descarte (-150 puntos)
+    (modify ?r (puntuacion (- ?p 150)) (motivos $?m "Precio sospechosamente bajo"))
+)
+
+(defrule ASOCIACION::filtrar-superficie-insuficiente
     ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
     (test (> ?p -150))
     
-    (object (is-a Solicitante) (superficie_deseada ?sd))
-    (object (is-a Vivienda) (name ?v) (superficie ?sup))
+    ;; Detectamos el rasgo generado por el porcentaje (< 85%)
+    (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor INSUFICIENTE))
     
-    ;; Solo si el usuario pidió superficie (>0)
-    (test (> ?sd 0))
-    
-    ;; LÓGICA: Si la superficie real es MENOR que (Deseada - 15m)
-    ;; Ejemplo: Pides 80m. Si tiene 60m (60 < 65) -> Fuera.
-    (test (< ?sup (- ?sd 15)))
-    
-    (test (not (member$ "Superficie muy insuficiente" $?m)))
+    (test (not (member$ "Superficie insuficiente (>15% dif)" $?m)))
     =>
-    (modify ?r (puntuacion (- ?p 150)) (motivos $?m "Superficie muy insuficiente"))
+    (modify ?r (puntuacion (- ?p 150)) (motivos $?m "Superficie insuficiente (>15% dif)"))
 )
 
 (defrule ASOCIACION::filtrar-sin-muebles
@@ -377,16 +424,39 @@
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
     (test (> ?p -150))
     (Rasgo(objeto ?v)(caracteristica ESPACIO)(valor INSUFICIENTE)) 
-    (test (not (member$ "Hacinamiento" $?m)))
-    => (modify ?r (puntuacion (- ?p 150))(motivos $?m "Hacinamiento")))
+    (test (not (member$ "Faltan dormitorios" $?m)))
+    => (modify ?r (puntuacion (- ?p 150))(motivos $?m "Faltan dormitorios")))
+
+(defrule ASOCIACION::filtrar-coliving-bano-privado
+    ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
+    (test (> ?p -150)) ;; Solo evaluamos si sigue viva
+    
+    ;; 1. Es CoLiving y exige baño privado
+    (object (is-a CoLiving) (num_personas ?np) (bano_privado SI))
+    
+    ;; 2. La vivienda no tiene suficientes baños (1 por persona)
+    (object (is-a Vivienda) (name ?v) (num_banos ?nb))
+    (test (< ?nb ?np))
+    
+    ;; 3. Evitar duplicados
+    (test (not (member$ "Faltan baños privados (CoLiving)" $?m)))
+    =>
+    ;; Descarte (-150)
+    (modify ?r (puntuacion (- ?p 150)) (motivos $?m "Faltan baños privados (CoLiving)"))
+)
 
 (defrule ASOCIACION::filtrar-mascota-prohibida 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
     (test (> ?p -150))
     (object (is-a Solicitante) (tiene_mascota SI)) 
-    (Rasgo(objeto ?v)(caracteristica POLITICA)(valor NO_MASCOTAS)) 
+    
+    ;; Leemos el nuevo rasgo
+    (Rasgo (objeto ?v) (caracteristica MASCOTAS) (valor PROHIBIDAS)) 
+    
     (test (not (member$ "No admiten mascotas" $?m)))
-    => (modify ?r (puntuacion (- ?p 150))(motivos $?m "No admiten mascotas")))
+    => 
+    (modify ?r (puntuacion (- ?p 150))(motivos $?m "No admiten mascotas"))
+)
 
 (defrule ASOCIACION::filtrar-accesibilidad-ancianos-mobilidad-reducida 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
@@ -485,10 +555,30 @@
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
     (test (> ?p -150))
     (object (is-a Solicitante) (tiene_mascota SI)) 
-    (object (is-a Vivienda) (name ?v) (tiene_terraza ?t)) (test (or (eq ?t FALSE) (eq ?t NO))) 
-    (Rasgo(objeto ?v)(caracteristica TIPOLOGIA)(valor BAJOS)) 
-    (test (not (member$ "Mascota sin exterior" $?m))) 
-    => (modify ?r (puntuacion (- ?p 50))(motivos $?m "Mascota sin exterior")))
+    (Rasgo (objeto ?v) (caracteristica MASCOTAS) (valor REGULAR)) 
+    (test (not (member$ "Mascota sin espacio exterior" $?m))) 
+    => 
+    (modify ?r (puntuacion (- ?p 50))(motivos $?m "Mascota sin espacio exterior"))
+)
+
+(defrule ASOCIACION::aviso-pareja-mala-eficiencia
+    ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
+    (test (> ?p -150)) ;; Solo si la vivienda sigue viva
+    
+    ;; 1. Es Pareja y busca Eficiencia (lo guardamos antes en la entrevista)
+    (object (is-a Pareja) (prefiere_cerca $?pc))
+    (test (member$ "Eficiencia" $?pc))
+    
+    ;; 2. La vivienda tiene mala eficiencia (F o G)
+    (object (is-a Vivienda) (name ?v) (certificado_energetico ?ce))
+    (test (or (eq ?ce F) (eq ?ce G)))
+    
+    ;; 3. Evitar duplicados
+    (test (not (member$ "Gasto energético alto (Mal certificado)" $?m)))
+    =>
+    ;; Penalización de 50 puntos
+    (modify ?r (puntuacion (- ?p 50)) (motivos $?m "Gasto energético alto (Mal certificado)"))
+)
 
 (defrule ASOCIACION::aviso-familia-abastecimiento 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
@@ -524,13 +614,6 @@
     (modify ?r (puntuacion (- ?p 50)) (motivos $?m "Sin Parking con coche propio"))
 )
 
-(defrule ASOCIACION::aviso-individuo-bajos 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
-    (test (> ?p -150))
-    (object (is-a Individuo)) 
-    (Rasgo(objeto ?v)(caracteristica TIPOLOGIA)(valor BAJOS)) 
-    (test (not (member$ "Seguridad Bajos" $?m))) 
-    => (modify ?r (puntuacion (- ?p 50))(motivos $?m "Seguridad Bajos")))
 
 (defrule ASOCIACION::aviso-sin-ascensor
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
@@ -580,18 +663,12 @@
     ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
     (test (> ?p -150))
     
-    (object (is-a Solicitante) (superficie_deseada ?sd))
-    (object (is-a Vivienda) (name ?v) (superficie ?sup))
+    ;; Detectamos el rasgo "Extra" (> 105%)
+    (Rasgo (objeto ?v) (caracteristica SUPERFICIE_REQ) (valor EXTRA))
     
-    (test (> ?sd 0))
-    
-    ;; LÓGICA: Si la superficie es MAYOR o IGUAL a (Deseada + 15m)
-    ;; Ejemplo: Pides 80m. La casa tiene 100m -> Premio.
-    (test (>= ?sup (+ ?sd 15)))
-    
-    (test (not (member$ "Espacio extra" $?m)))
+    (test (not (member$ "Espacio extra (>5%)" $?m)))
     =>
-    (modify ?r (puntuacion (+ ?p 10)) (motivos $?m "Espacio extra"))
+    (modify ?r (puntuacion (+ ?p 10)) (motivos $?m "Espacio extra (>5%)"))
 )
 
 (defrule REFINAMIENTO::bonus-aire 
@@ -638,14 +715,6 @@
     (test (not (member$ "Piso Oscuro" $?m))) 
     => (modify ?r (puntuacion (- ?p 10)) (motivos $?m "Piso Oscuro")))
 
-
-(defrule REFINAMIENTO::original-seguridad-bajos 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
-    (test (> ?p -150)) 
-    (object (is-a Bajo) (name ?v) (tiene_rejas NO)) 
-    (test (not (member$ "Inseguridad" $?m))) 
-    => (modify ?r (puntuacion (- ?p 20)) (motivos $?m "Inseguridad")))
-
 (defrule REFINAMIENTO::bonus-eficiencia 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m))
     (test (> ?p -150)) 
@@ -668,12 +737,24 @@
     (test (not (member$ "Ambiente" $?m))) 
     => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Ambiente")))
 
+(defrule REFINAMIENTO::bonus-luminosidad-total
+    ?r <- (Recomendacion (vivienda ?v) (puntuacion ?p) (motivos $?m))
+    (test (> ?p -150))
+    
+    ;; Detectamos la nueva etiqueta
+    (Rasgo (objeto ?v) (caracteristica LUMINOSIDAD) (valor MUY_LUMINOSO))
+    
+    (test (not (member$ "Muy Luminoso (Sol todo el día)" $?m)))
+    =>
+    (modify ?r (puntuacion (+ ?p 10)) (motivos $?m "Muy Luminoso (Sol todo el día)"))
+)
+
 (defrule REFINAMIENTO::recomendar-estudiante-transporte 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
     (test (> ?p -150))
     (object (is-a Estudiantes)) (Rasgo(objeto ?v)(caracteristica CONECTIVIDAD)(valor RAPIDA)) 
-    (test (not (member$ "Conexión Uni" $?m))) 
-    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Conexión Uni")))
+    (test (not (member$ "Buena Comunicación" $?m))) 
+    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Buena Comunicación")))
 
 (defrule REFINAMIENTO::recomendar-anciano-relax 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
@@ -689,13 +770,6 @@
     (Rasgo(objeto ?v)(caracteristica COSTE)(valor CHOLLO)) 
     (test (not (member$ "Gran precio" $?m))) 
     => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Gran precio")))
-
-(defrule REFINAMIENTO::recomendar-pareja-atico 
-    ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
-    (test (> ?p -150))
-    (object (is-a Pareja)) (Rasgo(objeto ?v)(caracteristica TIPOLOGIA)(valor ATICO)) 
-    (test (not (member$ "Ático" $?m))) 
-    => (modify ?r (puntuacion (+ ?p 10))(motivos $?m "Ático")))
 
 ;;; 5. CLASIFICACIÓN FINAL POR PUNTOS 
 
