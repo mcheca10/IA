@@ -442,9 +442,9 @@
     (object (is-a Solicitante) (edad_mas_anciano ?e) (movilidad_reducida ?mr)) 
     (test (or (> ?e 70) (eq ?mr SI) (eq ?mr TRUE)))
     (Rasgo(objeto ?v)(caracteristica ACCESIBILIDAD)(valor MALA)) 
-    (test (not (member$ "Barreras arquitectónicas (Ancianos/Movilidad)" $?m)))
+    (test (not (member$ "Accessibilidad mala" $?m)))
     => 
-    (modify ?r (puntuacion (- ?p 150))(motivos $?m "Barreras arquitectónicas (Ancianos/Movilidad)")))
+    (modify ?r (puntuacion (- ?p 150))(motivos $?m "Accessibilidad mala")))
 
 (defrule ASOCIACION::filtrar-duplex-ancianos-movilidad-reducida 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
