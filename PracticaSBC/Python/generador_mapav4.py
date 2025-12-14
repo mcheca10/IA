@@ -2,7 +2,7 @@ import random
 import sys
 
 # --- CONFIGURACIÓN ---
-NOMBRE_ARCHIVO_CLP = "instancias_v9.clp"  # Nombre actualizado
+NOMBRE_ARCHIVO_CLP = "instancias_v9.clp"  
 NOMBRE_IMAGEN = "mapa_v9.png"
 NUM_VIVIENDAS = 100
 NUM_SERVICIOS = 40

@@ -458,7 +458,7 @@
     (modify ?r (puntuacion (- ?p 150))(motivos $?m "No admiten mascotas"))
 )
 
-(defrule ASOCIACION::filtrar-accesibilidad-ancianos-mobilidad-reducida 
+(defrule ASOCIACION::filtrar-accesibilidad-ancianos-movilidad-reducida 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
     (test (> ?p -150))
     (object (is-a Solicitante) (edad_mas_anciano ?e) (movilidad_reducida ?mr)) 
@@ -468,7 +468,7 @@
     => 
     (modify ?r (puntuacion (- ?p 150))(motivos $?m "Barreras arquitectónicas (Ancianos/Movilidad)")))
 
-(defrule ASOCIACION::filtrar-duplex-ancianos-mobilidad-reducida 
+(defrule ASOCIACION::filtrar-duplex-ancianos-movilidad-reducida 
     ?r<-(Recomendacion(vivienda ?v)(puntuacion ?p)(motivos $?m)) 
     (test (> ?p -150))
     (object (is-a Solicitante) (edad_mas_anciano ?e) (movilidad_reducida ?mr))
@@ -789,7 +789,7 @@
     (declare (salience -100))
     ?r <- (Recomendacion (estado INDETERMINADO) (puntuacion ?p&:(and (>= ?p 0) (< ?p 30))))
     =>
-    (modify ?r (estado VALID)))
+    (modify ?r (estado ADECUADO)))
 
 (defrule REFINAMIENTO::clasificar-muy-recomendable
     (declare (salience -100))
