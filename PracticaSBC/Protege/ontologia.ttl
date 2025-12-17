@@ -23,11 +23,11 @@
 #    Data properties
 #################################################################
 
-###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5#tiene_parking
-:tiene_parking rdf:type owl:DatatypeProperty ;
-               rdfs:subPropertyOf owl:topDataProperty ;
-               rdfs:domain :Vivienda ;
-               rdfs:range xsd:boolean .
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5#superficie_deseada
+:superficie_deseada rdf:type owl:DatatypeProperty ;
+                    rdfs:subPropertyOf owl:topDataProperty ;
+                    rdfs:domain :Vivienda ;
+                    rdfs:range xsd:float .
 
 
 ###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/acceso_portal
@@ -222,14 +222,6 @@
                            rdf:type owl:FunctionalProperty ;
                            rdfs:domain :CoLiving ;
                            rdfs:range xsd:boolean .
-
-
-###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/ingresos_mensuales
-:ingresos_mensuales rdf:type owl:DatatypeProperty ;
-                    rdfs:subPropertyOf owl:topDataProperty ;
-                    rdf:type owl:FunctionalProperty ;
-                    rdfs:domain :Solicitante ;
-                    rdfs:range xsd:float .
 
 
 ###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/medio_transporte_principal
@@ -533,14 +525,6 @@
                               ] .
 
 
-###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/superficie
-:superficie rdf:type owl:DatatypeProperty ;
-            rdfs:subPropertyOf owl:topDataProperty ;
-            rdf:type owl:FunctionalProperty ;
-            rdfs:domain :Vivienda ;
-            rdfs:range xsd:float .
-
-
 ###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tamano_jardin
 :tamano_jardin rdf:type owl:DatatypeProperty ;
                rdfs:subPropertyOf owl:topDataProperty ;
@@ -605,11 +589,17 @@
                rdfs:range xsd:boolean .
 
 
+###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tiene_parking
+:tiene_parking rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Vivienda ;
+               rdfs:range xsd:boolean .
+
+
 ###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/tiene_rejas
 :tiene_rejas rdf:type owl:DatatypeProperty ;
              rdfs:subPropertyOf owl:topDataProperty ;
              rdf:type owl:FunctionalProperty ;
-             rdfs:domain :Bajo ;
              rdfs:range xsd:boolean .
 
 
@@ -648,16 +638,6 @@
 #################################################################
 #    Classes
 #################################################################
-
-###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Atico
-:Atico rdf:type owl:Class ;
-       rdfs:subClassOf :Piso .
-
-
-###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Bajo
-:Bajo rdf:type owl:Class ;
-      rdfs:subClassOf :Piso .
-
 
 ###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Bloque
 :Bloque rdf:type owl:Class ;
@@ -738,11 +718,6 @@
 ###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Instituto
 :Instituto rdf:type owl:Class ;
            rdfs:subClassOf :Educacion .
-
-
-###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Intermedio
-:Intermedio rdf:type owl:Class ;
-            rdfs:subClassOf :Piso .
 
 
 ###  http://www.semanticweb.org/andreu/ontologies/2025/10/untitled-ontology-5/Ocio
