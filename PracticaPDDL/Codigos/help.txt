@@ -1,0 +1,7 @@
+INFORMACION IMPORTANTE:
+
+Se supondrá que las asignaciones se hacen en un mes, por lo que hay dias del 1 al 30.
+Maximo 4 personas por habitacion.
+
+- Objeto Habitacion: id, capacidad
+- Objeto Reserva: id, personas, dia inicio, dia fin
