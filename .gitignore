@@ -1,3 +1,42 @@
+# ======================================
+# CARPETAS QUE IGNORAMOS ENTERAS
+# ======================================
+# Ignoramos prácticas enteras según demanda
+PracticaBusqueda/
+PracticaSBC/
+
+# ======================================
+# PRACTICA PDDL (Planificación)
+# ======================================
+# Resultados de ejecución (basura)
+*.plan
+*.soln
+sas_plan
+
+# Ejecutables (para que no subas ejecutables de distintos OS por error)
+ff
+metric-ff
+metricff
+Metric-FF/
+*.dll
+*.exe
+cygwin1.dll
+metricff.exe
+
+# ======================================
+# PRACTICA SBC (Sistemas Basados en Conocimiento)
+# ======================================
+# Entorno virtual (Librerías instaladas: pesan mucho y no se suben)
 .venv/
+venv/
+
+# Bytecode compilado y caché (genera conflictos entre ordenadores)
 __pycache__/
 *.pyc
+
+# ======================================
+# GENERAL / SISTEMA
+# ======================================
+.vscode/
+.DS_Store
+Thumbs.db
