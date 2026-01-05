@@ -27,14 +27,14 @@ class Reserva:
 def extension4():
     contenido = ""
     # INIT (adicional según extensión)
-    contenido += "      (= (beneficio) 0)\n"
+    contenido += "      (= (coste) 0)\n"
     contenido += "   )\n\n"
 
     # GOAL (estado final)
     contenido += "   (:goal (forall (?r - reserva) (procesada ?r)))\n"
 
     # METRIC (optimización)
-    contenido += "   (:metric maximize (beneficio))\n"
+    contenido += "   (:metric minimize (coste))\n"
     return contenido
 
 # ---------- ESCRITURA ESPECÍFICA EXTENSIÓN 3 ------------------------------
@@ -42,14 +42,14 @@ def extension4():
 def extension3():
     contenido = ""
     # INIT (adicional según extensión)
-    contenido += "      (= (beneficio) 0)\n"
+    contenido += "      (= (coste) 0)\n"
     contenido += "   )\n\n"
 
     # GOAL (estado final)
     contenido += "   (:goal (forall (?r - reserva) (procesada ?r)))\n"
 
     # METRIC (optimización)
-    contenido += "   (:metric maximize (beneficio))\n"
+    contenido += "   (:metric minimize (coste))\n"
     return contenido
 
 # ---------- ESCRITURA ESPECÍFICA EXTENSIÓN 2 ------------------------------
@@ -64,14 +64,15 @@ def extension2(lista_habitaciones, lista_reservas):
     for r in lista_reservas: # Generar preferencia para cada reserva
         o = random.choice(orientaciones)
         contenido += f"      (orientacion-preferida {r.id} {o})\n"
-    contenido += "      (= (beneficio) 0)\n" # Beneficio inicial
+    
+    contenido += "      (= (coste) 0)\n" # Coste inicial
     contenido += "   )\n\n"
 
     # GOAL (estado final)
     contenido += "   (:goal (forall (?r - reserva) (procesada ?r)))\n"
 
     # METRIC (optimización)
-    contenido += "   (:metric maximize (beneficio))\n"
+    contenido += "   (:metric minimize (coste))\n"
     return contenido
 
 # ---------- ESCRITURA ESPECÍFICA EXTENSIÓN 1 ------------------------------
@@ -79,14 +80,14 @@ def extension2(lista_habitaciones, lista_reservas):
 def extension1():
     contenido = ""
     # INIT (adicional según extensión)
-    contenido += "      (= (beneficio) 0)\n"
+    contenido += "      (= (coste) 0)\n"
     contenido += "   )\n\n"
 
     # GOAL (estado final)
     contenido += "   (:goal (forall (?r - reserva) (procesada ?r)))\n"
 
     # METRIC (optimización)
-    contenido += "   (:metric maximize (beneficio))\n"
+    contenido += "   (:metric minimize (coste))\n"
     return contenido
 
 # ---------- ESCRITURA ESPECÍFICA NIVEL BÁSICO -----------------------------
@@ -94,14 +95,15 @@ def extension1():
 def basico():
     contenido = ""
     # INIT (adicional según extensión)
-        # No requiere inicialización extra
+    # Nota: El dominio básico no tiene función de coste definida, 
+    # por lo que cerramos el init sin añadir fluentes extra.
     contenido += "   )\n\n"
 
     # GOAL (estado final)
     contenido += "   (:goal (forall (?r - reserva) (asignada ?r)))\n"
 
     # METRIC (optimización)
-        # No hay ninguna métrica de optimización
+    # No hay métrica en el básico
     return contenido
 
 
@@ -177,17 +179,18 @@ def ejecutar_planificador(archivo_dominio, archivo_problema):
     print("Introduce la ruta relativa al ejecutable 'ff' (ej: ./ff o ../Metric-FF/ff)")
     ruta_ff = input("Ruta: ").strip()
 
-    # Comprobamos si el archivo existe para evitar errores feos
+    # Comprobamos si el archivo existe
     if not os.path.isfile(ruta_ff):
         print(f"Error: No se encuentra el ejecutable en '{ruta_ff}'")
         return
 
     # Construimos el comando: ./ff -o dominio.pddl -f problema.pddl
-    comando = f"{ruta_ff} -o {archivo_dominio} -f {archivo_problema}"
-    print("\n\n")
+    # Nota: Metric-FF a veces requiere flag -O para optimización estricta, pero por defecto suele intentar optimizar la métrica.
+    comando = f"{ruta_ff} -O -o {archivo_dominio} -f {archivo_problema}"
+    print(f"Ejecutando: {comando}\n\n")
     
-    # Ejecutamos el comando y mostramos la salida directamente
-    try: subprocess.run(comando, shell=True, check=True)
+    try: 
+        subprocess.run(comando, shell=True, check=True)
     except subprocess.CalledProcessError:
         print("\nError durante la ejecución del planificador.")
 
@@ -199,7 +202,7 @@ if __name__ == "__main__":
     
     try:
         # Definir la extensión a probar
-        print("Que estensión quieres probar [0/1/2/3/4]?: ", end="")
+        print("Que extensión quieres probar [0/1/2/3/4]?: ", end="")
         extension = int(input()) 
         match extension: # Mapeo del número a nombre de dominio/extensión
             case 0: dominio = "basico"
@@ -207,7 +210,7 @@ if __name__ == "__main__":
             case 2: dominio = "extension2"
             case 3: dominio = "extension3"
             case 4: dominio = "extension4"
-            case _: # por defecto usamos el básico
+            case _: 
                 print("-> Extensión no válida, usando básico por defecto")
                 dominio = "basico"
 
@@ -228,13 +231,13 @@ if __name__ == "__main__":
         else:
             semilla = int(semilla_str)
 
-        random.seed(semilla) # Configuración de la semilla
-        nombre_fichero = f"{NOMBRE_FICHERO}_{dominio}_{num_habs}hab_{num_res}res.pddl" # Configuración del nombre del archivo
+        random.seed(semilla) 
+        nombre_fichero = f"{NOMBRE_FICHERO}_{dominio}_{num_habs}hab_{num_res}res.pddl" 
 
         # Generamos el archivo
         generar_problema(num_habs, num_res, dominio, nombre_fichero)
 
-        # Ejecutamos la planifiación (con el archivo de problema creado)
+        # Ejecutamos la planifiación
         print("\n¿Quieres ejecutar el planificador ahora? (y/n): ", end="")
         if input().lower() == 'y':
             match extension:
@@ -243,7 +246,7 @@ if __name__ == "__main__":
                 case 2: archivo_dominio = "dominioHotel2.pddl"
                 case 3: archivo_dominio = "dominioHotel3.pddl"
                 case 4: archivo_dominio = "dominioHotel4.pddl"
-                case _: archivo_dominio = "dominioHotel.pddl" # por defecto usamos el básico
+                case _: archivo_dominio = "dominioHotel.pddl"
             
             if archivo_dominio: ejecutar_planificador(archivo_dominio, nombre_fichero)
             else:

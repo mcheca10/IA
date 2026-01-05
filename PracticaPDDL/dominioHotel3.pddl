@@ -17,7 +17,7 @@
         ;; cuánta gente tiene la reserva
         (personas ?r - reserva)
         ;; coste de la asignación
-        (beneficio)
+        (coste)
     )
 
     (:action asignar
@@ -33,17 +33,18 @@
             (forall (?d - dia) 
                 (when (dia-reserva ?d ?r) (ocupada ?h ?d)))
             (procesada ?r)
-            (increase (beneficio) 10) ;; Puntos base: Asignar es mucho mejor que descartar (+10)
-            (decrease (beneficio) (- (capacidad ?h) (personas ?r))) ;; Puntos negativos: Desperdicio de plazas
+            (increase (coste) (- (capacidad ?h) (personas ?r))) ;; Penalizamos el desperdicio de plazas
         )
     )
 
     (:action descartar
         :parameters (?r - reserva)
         :precondition (not (procesada ?r))
-        :effect (procesada ?r)
+        :effect (and
+            (procesada ?r)
+            (increase (coste) 10)) ;; Penalizamos descartar
     )
 )
 
 ;; GOAL: (forall (reserva ?r) (procesada ?r))
-;; -> MAXIMIZE beneficio
+;; -> MINIMIZE coste
