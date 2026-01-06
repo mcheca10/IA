@@ -1,4 +1,4 @@
- (define (domain dominioHotelBasico)
+(define (domain dominioHotelBasico)
   (:requirements :strips :typing :adl :fluents)
 
   (:types
@@ -24,7 +24,11 @@
         (>= (capacidad ?h) (personas ?r))
         (forall (?r2 - reserva)
             (imply (ocupada ?h ?r2) 
-                   (> (desde ?r2) (hasta ?r)))
+                   (or (< (hasta ?r) (desde ?r2))
+                       (> (desde ?r) (hasta ?r2))
+                       (not (asignada ?r2))
+                   )
+            )
         )
     )
     :effect (and 

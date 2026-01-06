@@ -4,7 +4,7 @@
   (:types reserva habitacion - object)
 
   (:predicates
-    (asignadaR ?r - reserva)
+    (asignada ?r - reserva)
     (ocupada ?h - habitacion ?r - reserva)
     (procesada ?r - reserva)
     (asignadaH ?h - habitacion)

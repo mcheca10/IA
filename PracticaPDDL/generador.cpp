@@ -99,7 +99,7 @@ int main() {
     cout << "--- GENERADOR DE PROBLEMAS HOTEL (EXT 4) ---" << endl;
     cout << "Num. Habitaciones: "; cin >> numHabs;
     cout << "Num. Reservas: ";     cin >> numReservas;
-    cout << "Max. Personas (Capacidad): "; cin >> maxPersonas;
+    cout << "Max. Personas/Reserva (Capacidad): "; cin >> maxPersonas;
     cout << "Horizonte temporal (dias): ";  cin >> maxDias;
 
     generarProblema(numHabs, numReservas, maxPersonas, maxDias);
