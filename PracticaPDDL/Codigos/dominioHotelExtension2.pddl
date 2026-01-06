@@ -21,12 +21,12 @@
     (total-cost)
   )
 
-  (:action asignarconorientacion
+  (:action asignar-CON-orientacion
     :parameters (?r - reserva ?h - habitacion ?o - orientacion)
     :precondition (and 
         (not (procesada ?r))
-        (orientada ?h ?o)
         (quiere ?r ?o)
+        (orientada ?h ?o)
         (>= (capacidad ?h) (personas ?r))
         (forall (?r2 - reserva)
             (imply (ocupada ?h ?r2) 
@@ -41,12 +41,12 @@
     )
   )
 
-  (:action asignarsinorientacion
+  (:action asignar-SIN-orientacion
     :parameters (?r - reserva ?h - habitacion ?o - orientacion)
     :precondition (and 
         (not (procesada ?r))
-        (not (orientada ?h ?o))
         (quiere ?r ?o)
+        (not (orientada ?h ?o))
         (>= (capacidad ?h) (personas ?r))
         (forall (?r2 - reserva)
             (imply (ocupada ?h ?r2) 

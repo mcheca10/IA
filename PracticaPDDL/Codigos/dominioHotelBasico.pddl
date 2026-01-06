@@ -17,7 +17,7 @@
     (hasta ?r - reserva)
   )
 
-  (:action asignar-habitacion
+  (:action asignar
     :parameters (?r - reserva ?h - habitacion)
     :precondition (and 
         (not (asignada ?r))

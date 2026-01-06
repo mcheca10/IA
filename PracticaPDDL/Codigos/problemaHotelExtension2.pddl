@@ -8,9 +8,11 @@
 
   (:init
     (= (total-cost) 0)
+    
     (= (capacidad h_norte) 2)
-    (= (capacidad h_sur) 4)
     (orientada h_norte norte)
+    
+    (= (capacidad h_sur) 4)
     (orientada h_sur sur)
 
     (= (personas r1) 2) (= (desde r1) 1) (= (hasta r1) 5) (quiere r1 norte)
@@ -21,9 +23,7 @@
     (= (personas r6) 4) (= (desde r6) 6) (= (hasta r6) 10) (quiere r6 sur)
   )
 
-  (:goal
-    (forall (?r - reserva) (procesada ?r))
-  )
+  (:goal (forall (?r - reserva) (procesada ?r)))
 
   (:metric minimize (total-cost))
 )

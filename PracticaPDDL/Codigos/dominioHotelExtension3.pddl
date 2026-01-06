@@ -29,7 +29,7 @@
         )
     )
     :effect (and 
-        (asignadaR ?r)
+        (asignada ?r)
         (ocupada ?h ?r)
         (procesada ?r)
         (increase (total-cost) (- (capacidad ?h) (personas ?r)))
@@ -41,7 +41,7 @@
     :precondition (not (procesada ?r))
     :effect (and 
         (procesada ?r)
-        (increase (total-cost) (* (personas ?r) 10))
+        (increase (total-cost) 100)
     )
   )
 )

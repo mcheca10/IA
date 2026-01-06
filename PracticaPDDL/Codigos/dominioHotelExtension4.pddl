@@ -7,7 +7,7 @@
     (asignada ?r - reserva)
     (ocupada ?h - habitacion ?r - reserva)
     (procesada ?r - reserva)
-    (asignadaH ?h - habitacion)
+    (usada ?h - habitacion)
   )
 
   (:functions
@@ -16,7 +16,6 @@
     (desde ?r - reserva)
     (hasta ?r - reserva)
     (total-cost)
-    (num-habs)
   )
 
   (:action asignar
@@ -31,12 +30,12 @@
         )
     )
     :effect (and 
-        (asignadaR ?r)
+        (asignada ?r)
         (ocupada ?h ?r)
         (procesada ?r)
         (increase (total-cost) (- (capacidad ?h) (personas ?r)))
-        (when (not (asignadaH ?h)) (increase (num-habs) 1))
-        (asignadaH ?h)
+        (when (not (usada ?h))
+            (and (increase (total-cost) 10) (usada ?h)))
     )
   )
 
@@ -45,7 +44,7 @@
     :precondition (not (procesada ?r))
     :effect (and 
         (procesada ?r)
-        (increase (total-cost) (* (personas ?r) 10))
+        (increase (total-cost) 100)
     )
   )
 )

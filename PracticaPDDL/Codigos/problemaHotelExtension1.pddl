@@ -15,9 +15,7 @@
     (= (personas r3) 2) (= (desde r3) 1) (= (hasta r3) 5)
   )
 
-  (:goal
-    (forall (?r - reserva) (procesada ?r))
-  )
+  (:goal (forall (?r - reserva) (procesada ?r)))
 
   (:metric minimize (total-cost))
 )
