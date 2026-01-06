@@ -12,7 +12,7 @@
         ;; orientación de la habitación
         (orientada ?h - habitacion ?o - orientacion)
         ;; orientación preferente de la reserva
-        (orientacion-preferida ?r - reserva ?o - orientacion)
+        (quiere ?r - reserva ?o - orientacion)
         (dia-reserva ?d - dia ?r - reserva)
         (procesada ?r - reserva )
     )
@@ -26,10 +26,12 @@
         (coste)
     )
 
-    (:action asignar
-        :parameters (?r - reserva ?h - habitacion)
+    (:action asignar-con-orientacion
+        :parameters (?r - reserva ?h - habitacion ?o - orientacion)
         :precondition (and
             (not (procesada ?r))
+            (quiere ?r ?o)
+            (orientada ?h ?o)
             (>= (capacidad ?h) (personas ?r))
             (forall (?d - dia) 
                 (imply (dia-reserva ?d ?r) (not (ocupada ?h ?d))))
@@ -39,9 +41,25 @@
             (forall (?d - dia) 
                 (when (dia-reserva ?d ?r) (ocupada ?h ?d)))
             (procesada ?r)
-            (forall (?o - orientacion) 
-                (when (and (orientada ?h ?o) (not (orientacion-preferida ?r ?o)))
-                    (increase (coste) 1))) ;; Penalizamos si la habitación tiene una orientación no deseada
+        )
+    )
+
+    (:action asignar-sin-orientacion
+        :parameters (?r - reserva ?h - habitacion ?o - orientacion)
+        :precondition (and
+            (not (procesada ?r))
+            (quiere ?r ?o)
+            (not (orientada ?h ?o))
+            (>= (capacidad ?h) (personas ?r))
+            (forall (?d - dia) 
+                (imply (dia-reserva ?d ?r) (not (ocupada ?h ?d))))
+        )
+        :effect (and
+            (asignada ?r)
+            (forall (?d - dia) 
+                (when (dia-reserva ?d ?r) (ocupada ?h ?d)))
+            (procesada ?r)
+            (increase (coste) 1) ;; Penalización por no asignar la orientación preferida
         )
     )
 
@@ -50,7 +68,7 @@
         :precondition (not (procesada ?r))
         :effect (and
             (procesada ?r)
-            (increase (coste) 10)) ;; Penalizamos descartar
+            (increase (coste) 100)) ;; Penalizamos descartar
     )
 )
     

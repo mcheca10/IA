@@ -42,7 +42,7 @@
         :precondition (not (procesada ?r))
         :effect (and
             (procesada ?r)
-            (increase (coste) 10)) ;; Penalizamos descartar
+            (increase (coste) 100)) ;; Penalizamos descartar
     )
 )
 

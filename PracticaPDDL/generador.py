@@ -180,7 +180,7 @@ def ejecutar_planificador(archivo_dominio, archivo_problema):
 
     # Usamos flag -O para optimizar métricas (excepto en básico que no tiene)
     flag_opt = "-O " if "Basico" not in archivo_dominio else ""
-    comando = f"{ruta_ff} {flag_opt}-o {archivo_dominio} -f {archivo_problema}"
+    comando = f"{ruta_ff} {flag_opt}-o Codigos/{archivo_dominio} -f {archivo_problema}"
     print(f"Ejecutando: {comando}\n\n")
     
     try: 

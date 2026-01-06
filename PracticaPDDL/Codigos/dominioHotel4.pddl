@@ -36,7 +36,7 @@
             (procesada ?r)
             (increase (coste) (- (capacidad ?h) (personas ?r))) ;; Penalizamos el desperdicio de plazas
             (when (not (usada ?h)) 
-                (and (increase (coste) 5) (usada ?h))) ;; Penalizamos abrir una habitación nueva (+5)
+                (and (increase (coste) 10) (usada ?h))) ;; Penalizamos abrir una habitación nueva (+10)
         )
     )
 
@@ -45,7 +45,7 @@
         :precondition (not (procesada ?r))
         :effect (and
             (procesada ?r)
-            (increase (coste) 10)) ;; Penalizamos descartar
+            (increase (coste) 100)) ;; Penalizamos descartar
     )
 )
 
