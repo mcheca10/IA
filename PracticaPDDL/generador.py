@@ -186,7 +186,7 @@ def ejecutar_planificador(archivo_dominio, archivo_problema):
 
     # Construimos el comando: ./ff -o dominio.pddl -f problema.pddl
     # Nota: Metric-FF a veces requiere flag -O para optimización estricta, pero por defecto suele intentar optimizar la métrica.
-    comando = f"{ruta_ff} -O -o Codigos/{archivo_dominio} -f {archivo_problema}"
+    comando = f"{ruta_ff} -O -o Codigo/{archivo_dominio} -f {archivo_problema}"
     print(f"Ejecutando: {comando}\n\n")
     
     try: 
