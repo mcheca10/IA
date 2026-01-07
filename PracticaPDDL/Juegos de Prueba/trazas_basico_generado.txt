@@ -1,0 +1,54 @@
+
+ff: parsing domain file
+domain 'BASICO' defined
+ ... done.
+ff: parsing problem file
+problem 'PROBLEMA-BASICO' defined
+ ... done.
+
+
+no metric specified. plan length assumed.
+
+checking for cyclic := effects --- OK.
+
+ff: search configuration is EHC, if that fails then  best-first on 1*g(s) + 5*h(s) where
+    metric is  plan length
+
+Cueing down from goal distance:   12 into depth [1]
+                                  11            [1]
+                                  10            [1]
+                                   9            [1]
+                                   8            [1]
+                                   7            [1]
+                                   6            [1]
+                                   5            [1]
+                                   4            [1]
+                                   3            [1]
+                                   2            [1]
+                                   1            [1]
+                                   0            
+
+ff: found legal plan as follows
+
+step    0: ASIGNAR RES012 HAB005
+        1: ASIGNAR RES011 HAB005
+        2: ASIGNAR RES010 HAB005
+        3: ASIGNAR RES009 HAB005
+        4: ASIGNAR RES008 HAB005
+        5: ASIGNAR RES007 HAB004
+        6: ASIGNAR RES006 HAB004
+        7: ASIGNAR RES005 HAB004
+        8: ASIGNAR RES004 HAB003
+        9: ASIGNAR RES003 HAB003
+       10: ASIGNAR RES002 HAB005
+       11: ASIGNAR RES001 HAB005
+     
+
+time spent:    0.00 seconds instantiating 0 easy, 52 hard action templates
+               0.00 seconds reachability analysis, yielding 263 facts and 52 actions
+               0.00 seconds creating final representation with 202 relevant facts, 0 relevant fluents
+               0.00 seconds computing LNF
+               0.00 seconds building connectivity graph
+               0.00 seconds searching, evaluating 13 states, to a max depth of 1
+               0.00 seconds total time
+

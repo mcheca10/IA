@@ -1,0 +1,38 @@
+
+ff: parsing domain file
+domain 'BASICO' defined
+ ... done.
+ff: parsing problem file
+problem 'PROBLEMAHOTELBASICO' defined
+ ... done.
+
+
+no metric specified. plan length assumed.
+
+checking for cyclic := effects --- OK.
+
+ff: search configuration is EHC, if that fails then  best-first on 1*g(s) + 5*h(s) where
+    metric is  plan length
+
+Cueing down from goal distance:    3 into depth [1]
+                                   2            [1] --- pruning stopped --- [1]
+
+Enforced Hill-climbing failed !
+switching to Best-first Search now.
+
+
+advancing to distance:    3
+                          2
+
+best first search space empty! problem proven unsolvable.
+
+
+
+time spent:    0.00 seconds instantiating 0 easy, 5 hard action templates
+               0.00 seconds reachability analysis, yielding 38 facts and 5 actions
+               0.00 seconds creating final representation with 38 relevant facts, 0 relevant fluents
+               0.00 seconds computing LNF
+               0.00 seconds building connectivity graph
+               0.00 seconds searching, evaluating 19 states, to a max depth of 1
+               0.00 seconds total time
+

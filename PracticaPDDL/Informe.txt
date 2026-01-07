@@ -1,9 +1,0 @@
-Unes 10 pagines
-
-S'ha d'entregar:
-- Informe
-	- Domini
-	- Operadors
-	- JProves
-- Generador JProves + JProves
-- Codi

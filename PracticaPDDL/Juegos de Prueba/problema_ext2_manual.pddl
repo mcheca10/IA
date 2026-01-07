@@ -1,0 +1,98 @@
+(define (problem problema_ext2_manual)
+  (:domain extension2)
+
+  (:objects
+    dia1 dia2 dia3 dia4 dia5 - dia
+    h_n1 h_n2 h_n3 h_n4 - habitacion
+    h_s1 h_s2 h_s3 h_s4 - habitacion
+    r1 r2 r3 r4 r5 r6 r7 r8 - reserva
+  )
+
+  (:init
+    (= (coste) 0)
+    (= (capacidad h_n1) 4)
+    (orientada h_n1 norte)
+    (= (capacidad h_n2) 4)
+    (orientada h_n2 norte)
+    (= (capacidad h_n3) 4)
+    (orientada h_n3 norte)
+    (= (capacidad h_n4) 4)
+    (orientada h_n4 norte)
+
+    (= (capacidad h_s1) 4)
+    (orientada h_s1 sur)
+    (= (capacidad h_s2) 4)
+    (orientada h_s2 sur)
+    (= (capacidad h_s3) 4)
+    (orientada h_s3 sur)
+    (= (capacidad h_s4) 4)
+    (orientada h_s4 sur)
+
+    (= (personas r1) 2)
+    (quiere r1 norte)
+    (dia-reserva dia1 r1)
+    (dia-reserva dia2 r1)
+    (dia-reserva dia3 r1)
+    (dia-reserva dia4 r1)
+    (dia-reserva dia5 r1)
+
+    (= (personas r2) 2)
+    (quiere r2 norte)
+    (dia-reserva dia1 r2)
+    (dia-reserva dia2 r2)
+    (dia-reserva dia3 r2)
+    (dia-reserva dia4 r2)
+    (dia-reserva dia5 r2)
+
+    (= (personas r3) 2)
+    (quiere r3 norte)
+    (dia-reserva dia1 r3)
+    (dia-reserva dia2 r3)
+    (dia-reserva dia3 r3)
+    (dia-reserva dia4 r3)
+    (dia-reserva dia5 r3)
+
+    (= (personas r4) 2)
+    (quiere r4 norte)
+    (dia-reserva dia1 r4)
+    (dia-reserva dia2 r4)
+    (dia-reserva dia3 r4)
+    (dia-reserva dia4 r4)
+    (dia-reserva dia5 r4)
+
+    (= (personas r5) 2)
+    (quiere r5 norte)
+    (dia-reserva dia1 r5)
+    (dia-reserva dia2 r5)
+    (dia-reserva dia3 r5)
+    (dia-reserva dia4 r5)
+    (dia-reserva dia5 r5)
+
+    (= (personas r6) 2)
+    (quiere r6 norte)
+    (dia-reserva dia1 r6)
+    (dia-reserva dia2 r6)
+    (dia-reserva dia3 r6)
+    (dia-reserva dia4 r6)
+    (dia-reserva dia5 r6)
+
+    (= (personas r7) 2)
+    (quiere r7 norte)
+    (dia-reserva dia1 r7)
+    (dia-reserva dia2 r7)
+    (dia-reserva dia3 r7)
+    (dia-reserva dia4 r7)
+    (dia-reserva dia5 r7)
+
+    (= (personas r8) 2)
+    (quiere r8 norte)
+    (dia-reserva dia1 r8)
+    (dia-reserva dia2 r8)
+    (dia-reserva dia3 r8)
+    (dia-reserva dia4 r8)
+    (dia-reserva dia5 r8)
+  )
+
+  (:goal (forall (?r - reserva) (procesada ?r)))
+  (:metric minimize (coste))
+)

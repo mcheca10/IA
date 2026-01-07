@@ -1,0 +1,50 @@
+
+ff: parsing domain file
+domain 'EXTENSION1' defined
+ ... done.
+ff: parsing problem file
+problem 'PROBLEMA_EXT1_MANUAL' defined
+ ... done.
+
+
+metric established (normalized to minimize): ((1.00*[RF0](COSTE)) - () + 0.00)
+
+checking for cyclic := effects --- OK.
+
+ff: search configuration is  best-first on 1*g(s) + 5*h(s) where
+    metric is ((1.00*[RF0](COSTE)) - () + 0.00)
+
+advancing to distance:   10
+                          9
+                          8
+                          7
+                          6
+                          5
+                          4
+                          3
+                          2
+                          1
+                          0
+
+ff: found legal plan as follows
+
+step    0: ASIGNAR R_CORTA2_D H1
+        1: DESCARTAR R_LARGA2
+        2: DESCARTAR R_LARGA1
+        3: ASIGNAR R_CORTA2_C H2
+        4: ASIGNAR R_CORTA2_B H1
+        5: ASIGNAR R_CORTA2_A H1
+        6: ASIGNAR R_CORTA1_D H2
+        7: ASIGNAR R_CORTA1_C H1
+        8: ASIGNAR R_CORTA1_B H2
+        9: ASIGNAR R_CORTA1_A H2
+     
+
+time spent:    0.00 seconds instantiating 10 easy, 20 hard action templates
+               0.00 seconds reachability analysis, yielding 78 facts and 30 actions
+               0.00 seconds creating final representation with 78 relevant facts, 1 relevant fluents
+               0.00 seconds computing LNF
+               0.00 seconds building connectivity graph
+               0.15 seconds searching, evaluating 11987 states, to a max depth of 0
+               0.15 seconds total time
+
